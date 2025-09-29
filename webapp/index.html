@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Screenplay Formatter - Professional Screenplay Formatting Tool</title>
-    <!-- Force refresh: v2.1 -->
+    <!-- Force refresh: v2.2 -->
     <style>
         * {
             margin: 0;
@@ -591,6 +591,13 @@
             flex: 1;
             padding: 40px;
             display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .processing-container {
+            max-width: 500px;
+            width: 100%;
         }
 
         .processing-header {
@@ -605,9 +612,17 @@
             margin-bottom: 8px;
         }
 
+        body.dark-mode .processing-title {
+            color: #e5e5e5;
+        }
+
         .processing-subtitle {
             font-size: 16px;
             color: #64748b;
+        }
+
+        body.dark-mode .processing-subtitle {
+            color: #999;
         }
 
         .progress-container {
@@ -617,6 +632,55 @@
             margin-bottom: 24px;
         }
 
+        body.dark-mode .progress-container {
+            background: #1f1f1f;
+        }
+
+        body.dark-mode .result-card {
+            background: #1a1a1a;
+            border-color: #2a2a2a;
+        }
+
+        body.dark-mode .result-card h3 {
+            color: #e5e5e5;
+        }
+
+        body.dark-mode .result-card-description {
+            color: #999;
+        }
+
+        body.dark-mode .result-card-icon {
+            background: #1f1f1f;
+            color: #999;
+        }
+
+        body.dark-mode .result-card-icon.summary {
+            background: #1a2540;
+            color: #5b7fff;
+        }
+
+        body.dark-mode .results-title {
+            color: #e5e5e5;
+        }
+
+        body.dark-mode .processing-summary-card {
+            background: linear-gradient(135deg, #1a1a1a 0%, #1f1f1f 100%);
+            border-color: #2a2a2a;
+        }
+
+        body.dark-mode .summary-item {
+            background: #141414;
+            border-color: #2a2a2a;
+        }
+
+        body.dark-mode .summary-label {
+            color: #999;
+        }
+
+        body.dark-mode .summary-value {
+            color: #e5e5e5;
+        }
+
         .progress-bar {
             width: 100%;
             height: 8px;
@@ -624,6 +688,10 @@
             border-radius: 4px;
             overflow: hidden;
             margin-bottom: 16px;
+        }
+
+        body.dark-mode .progress-bar {
+            background: #2a2a2a;
         }
 
         .progress-fill {
@@ -638,6 +706,10 @@
             font-size: 14px;
             color: #475569;
             text-align: center;
+        }
+
+        body.dark-mode .progress-text {
+            color: #999;
         }
 
         .results-area {
@@ -818,6 +890,148 @@
             display: none;
         }
 
+        /* Filename Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-mode .modal {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+        }
+
+        .modal-header {
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #1e293b;
+        }
+
+        body.dark-mode .modal-title {
+            color: #e5e5e5;
+        }
+
+        .modal-subtitle {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        body.dark-mode .modal-subtitle {
+            color: #999;
+        }
+
+        .modal-body {
+            margin-bottom: 24px;
+        }
+
+        .modal-label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+            color: #1e293b;
+        }
+
+        body.dark-mode .modal-label {
+            color: #e5e5e5;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            background: white;
+            color: #1a1a1a;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        body.dark-mode .modal-input {
+            background: #141414;
+            border-color: #2a2a2a;
+            color: #e5e5e5;
+        }
+
+        .modal-input:focus {
+            border-color: #5b7fff;
+            box-shadow: 0 0 0 3px rgba(91, 127, 255, 0.1);
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-btn.primary {
+            background: #5b7fff;
+            color: white;
+        }
+
+        .modal-btn.primary:hover {
+            background: #4a6eef;
+            transform: translateY(-1px);
+        }
+
+        .modal-btn.secondary {
+            background: white;
+            color: #1a1a1a;
+            border: 1px solid #e5e5e5;
+        }
+
+        body.dark-mode .modal-btn.secondary {
+            background: #141414;
+            border-color: #2a2a2a;
+            color: #e5e5e5;
+        }
+
+        .modal-btn.secondary:hover {
+            background: #f5f5f7;
+        }
+
+        body.dark-mode .modal-btn.secondary:hover {
+            background: #1f1f1f;
+        }
+
 
         @media (max-width: 768px) {
             .app-container {
@@ -971,16 +1185,18 @@
 
             <!-- Processing Area -->
             <div class="processing-area" id="processingArea">
-                <div class="processing-header">
-                    <div class="processing-title">Processing Your Screenplay</div>
-                    <div class="processing-subtitle">Applying professional formatting standards...</div>
-                </div>
-
-                <div class="progress-container">
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progressFill"></div>
+                <div class="processing-container">
+                    <div class="processing-header">
+                        <div class="processing-title">Processing Your Screenplay</div>
+                        <div class="processing-subtitle">Applying professional formatting standards...</div>
                     </div>
-                    <div class="progress-text" id="progressText">Initializing...</div>
+
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="progress-text" id="progressText">Initializing...</div>
+                    </div>
                 </div>
             </div>
 
@@ -1001,11 +1217,36 @@
         </div>
     </div>
 
+    <!-- Filename Modal -->
+    <div class="modal-overlay" id="filenameModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Customize Filename</div>
+                <div class="modal-subtitle">Choose a name for your formatted screenplay</div>
+            </div>
+            <div class="modal-body">
+                <label class="modal-label" for="filenameInput">Filename (without extension)</label>
+                <input
+                    type="text"
+                    class="modal-input"
+                    id="filenameInput"
+                    placeholder="screenplay_formatted"
+                    value="screenplay_formatted"
+                >
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" id="cancelFilenameBtn">Cancel</button>
+                <button class="modal-btn primary" id="confirmFilenameBtn">Download</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Application state
         let selectedFile = null;
         let apiKey = localStorage.getItem('apiKey') || '';
         let processingResults = null;
+        let currentDownloadFormat = null;
 
         // DOM elements
         const uploadArea = document.getElementById('uploadArea');
@@ -1021,6 +1262,10 @@
         const progressFill = document.getElementById('progressFill');
         const progressText = document.getElementById('progressText');
         const themeToggle = document.getElementById('themeToggle');
+        const filenameModal = document.getElementById('filenameModal');
+        const filenameInput = document.getElementById('filenameInput');
+        const confirmFilenameBtn = document.getElementById('confirmFilenameBtn');
+        const cancelFilenameBtn = document.getElementById('cancelFilenameBtn');
 
         // Initialize
         init();
@@ -1076,6 +1321,20 @@
             // Action buttons
             processBtn.addEventListener('click', processScreenplay);
             resetBtn.addEventListener('click', resetApplication);
+
+            // Filename modal
+            confirmFilenameBtn.addEventListener('click', confirmDownload);
+            cancelFilenameBtn.addEventListener('click', closeFilenameModal);
+            filenameModal.addEventListener('click', (e) => {
+                if (e.target === filenameModal) closeFilenameModal();
+            });
+
+            // Download All button
+            document.addEventListener('click', (e) => {
+                if (e.target.id === 'downloadAllBtn') {
+                    openFilenameModal('all');
+                }
+            });
         }
 
         function toggleTheme() {
@@ -1283,12 +1542,31 @@
                         <div class="result-card-description">
                             ${formatInfo.description}
                         </div>
-                        <button class="download-btn primary" onclick="downloadFormat('${file.format}')">
+                        <button class="download-btn primary" onclick="openFilenameModal('${file.format}')">
                             Download ${file.format.toUpperCase()}
                         </button>
                     </div>
                 `;
             });
+
+            // Add audit log card if "Generate audit log" was enabled
+            if (document.getElementById('generateAudit').checked && result.audit_log) {
+                const formatInfo = getFormatInfo('json');
+                cardsHTML += `
+                    <div class="result-card">
+                        <div class="result-card-header">
+                            <div class="result-card-icon json"></div>
+                            <h3>${formatInfo.name}</h3>
+                        </div>
+                        <div class="result-card-description">
+                            ${formatInfo.description}
+                        </div>
+                        <button class="download-btn primary" onclick="openFilenameModal('json')">
+                            Download Audit Log
+                        </button>
+                    </div>
+                `;
+            }
 
             // Add summary card if available
             if (result.summary) {
@@ -1370,7 +1648,7 @@
                     description: 'Professional PDF format with Courier font and proper page layout. Industry-standard for final scripts.'
                 },
                 'json': {
-                    name: 'Audit Report',
+                    name: 'Audit Log',
                     icon: '',
                     description: 'Detailed correction log showing all AI-powered fixes applied to your screenplay.'
                 }
@@ -1378,20 +1656,82 @@
             return info[format] || { name: format, icon: '', description: 'Formatted output file.' };
         }
 
-        function downloadFormat(format) {
+        function openFilenameModal(format) {
+            currentDownloadFormat = format;
+            // Suggest filename based on original file
+            const baseName = selectedFile ? selectedFile.name.replace(/\.[^/.]+$/, '') : 'screenplay_formatted';
+            filenameInput.value = baseName;
+            filenameModal.classList.add('active');
+
+            // Wait a bit for the modal to render, then focus
+            setTimeout(() => {
+                filenameInput.focus();
+                filenameInput.select();
+            }, 50);
+
+            // Add keyboard listener for Enter key
+            const handleEnter = (e) => {
+                if (e.key === 'Enter') {
+                    confirmDownload();
+                    filenameInput.removeEventListener('keypress', handleEnter);
+                }
+            };
+            filenameInput.addEventListener('keypress', handleEnter);
+        }
+
+        function closeFilenameModal() {
+            filenameModal.classList.remove('active');
+            currentDownloadFormat = null;
+        }
+
+        function confirmDownload() {
+            if (!currentDownloadFormat || !sessionId) return;
+
+            const filename = filenameInput.value.trim() || 'screenplay_formatted';
+
+            if (currentDownloadFormat === 'all') {
+                downloadAllFormats(filename);
+            } else {
+                downloadFormat(currentDownloadFormat, filename);
+            }
+
+            closeFilenameModal();
+        }
+
+        function downloadFormat(format, customFilename = null) {
             if (!sessionId) {
                 alert('No session found. Please process a file first.');
                 return;
             }
 
+            const filename = customFilename || 'screenplay_formatted';
+
             // Download specific format
             const downloadUrl = `/api/download/${sessionId}/${format}`;
             const link = document.createElement('a');
             link.href = downloadUrl;
-            link.download = `screenplay_formatted.${format}`;
+            link.download = `${filename}.${format}`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        }
+
+        function downloadAllFormats(filename) {
+            if (!processingResults || !sessionId) return;
+
+            // Download all output files
+            processingResults.files.forEach(file => {
+                setTimeout(() => {
+                    downloadFormat(file.format, filename);
+                }, 100);
+            });
+
+            // Also download audit log if it exists
+            if (document.getElementById('generateAudit').checked && processingResults.audit_log) {
+                setTimeout(() => {
+                    downloadFormat('json', `${filename}_audit_log`);
+                }, 200);
+            }
         }
 
         function resetApplication() {
