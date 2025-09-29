@@ -1,0 +1,60 @@
+FADE IN:
+
+INT. DETECTIVE'S OFFICE - NIGHT
+
+A dimly lit office filled with case files and old photographs. DETECTIVE MORGAN (40s, weathered face) sits at his desk, studying a photograph under a desk lamp.
+
+DETECTIVE MORGAN
+(to himself)
+Something doesn't add up.
+
+The door bursts open. OFFICER CHEN (30s, uniform) rushes in.
+
+OFFICER CHEN
+Detective! We found something!
+
+DETECTIVE MORGAN
+(standing)
+What is it?
+
+OFFICER CHEN
+The witness from the park...
+(beat)
+She remembers seeing a blue sedan.
+
+Detective Morgan grabs his coat.
+
+DETECTIVE MORGAN
+Let's go.
+
+CUT TO:
+
+EXT. CITY PARK - NIGHT
+
+Police cars surround the area. Yellow tape blocks off a section near the pond.
+
+DETECTIVE MORGAN (V.O.)
+Every case has that one moment when everything clicks.
+
+BEGIN MONTAGE
+
+-- Detective Morgan interviews WITNESS (60s, nervous)
+-- Officer Chen takes notes
+-- Forensic team searches the ground
+-- A blue sedan is towed away
+
+END MONTAGE
+
+INT. POLICE STATION - INTERROGATION ROOM - LATER
+
+Detective Morgan sits across from SUSPECT (35, nervous, sweating).
+
+DETECTIVE MORGAN
+We know you were there.
+
+SUSPECT
+I want a lawyer.
+
+FADE OUT.
+
+THE END
