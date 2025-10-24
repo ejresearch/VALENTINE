@@ -22,6 +22,13 @@ class ElementType(Enum):
     TITLE = auto()
     CHYRON = auto()
     PAGE_BREAK = auto()  # New: Forced page break
+    TITLE_PAGE_TITLE = auto()  # New: Screenplay title
+    TITLE_PAGE_AUTHOR = auto()  # New: Author name(s)
+    TITLE_PAGE_CONTACT = auto()  # New: Contact information
+    TITLE_PAGE_CREDIT = auto()  # New: "by", "written by", etc.
+    MORE = auto()  # New: (MORE) continuation marker
+    SCENE_NUMBER = auto()  # New: Scene numbering
+    VFX_SFX = auto()  # New: [SOUND EFFECT] or [VISUAL EFFECT]
     BLANK = auto()
     UNKNOWN = auto()
 
@@ -33,6 +40,7 @@ class ScreenplayElement:
     content: str
     line_number: int
     raw_text: str
+    scene_number: Optional[int] = None  # For scene numbering support
 
 
 class ParserState:
@@ -42,6 +50,8 @@ class ParserState:
         self.in_dialogue_block: bool = False
         self.in_montage: bool = False
         self.expecting_dialogue: bool = False
+        self.in_title_page: bool = True  # Start in title page mode
+        self.screenplay_started: bool = False  # Track if main screenplay has started
 
 
 class ScreenplayParser:
@@ -53,7 +63,9 @@ class ScreenplayParser:
     )
 
     TRANSITION_PATTERN = re.compile(
-        r"^(FADE IN:|FADE OUT\.|FADE TO:|CUT TO:|DISSOLVE TO:|MATCH CUT TO:|JUMP CUT TO:|SMASH CUT TO:|TIME CUT:|FADE TO BLACK\.|THE END)$",
+        r"^(FADE IN:|FADE OUT\.|FADE TO:|CUT TO:|DISSOLVE TO:|MATCH CUT TO:|JUMP CUT TO:|SMASH CUT TO:|"
+        r"TIME CUT:|FADE TO BLACK\.|WIPE TO:|PUSH TO:|IRIS IN\.|IRIS OUT\.|WHIP PAN TO:|"
+        r"SPLIT SCREEN|L-CUT|J-CUT|THE END)$",
         re.IGNORECASE
     )
 
@@ -92,6 +104,32 @@ class ScreenplayParser:
 
     # New: Dual dialogue marker (use ^ for second character in dual dialogue)
     DUAL_DIALOGUE_MARKER = "^"
+
+    # New: Title page patterns
+    TITLE_PAGE_TITLE_PATTERN = re.compile(
+        r"^TITLE:\s*(.+)$",
+        re.IGNORECASE
+    )
+
+    TITLE_PAGE_AUTHOR_PATTERN = re.compile(
+        r"^AUTHOR:\s*(.+)$",
+        re.IGNORECASE
+    )
+
+    TITLE_PAGE_CREDIT_PATTERN = re.compile(
+        r"^(by|written by|screenplay by|story by)$",
+        re.IGNORECASE
+    )
+
+    TITLE_PAGE_CONTACT_PATTERN = re.compile(
+        r"^CONTACT:\s*(.+)$",
+        re.IGNORECASE
+    )
+
+    # New: VFX/SFX pattern
+    VFX_SFX_PATTERN = re.compile(
+        r"^\[(.+)\]$"
+    )
 
     CHARACTER_EXTENSIONS = [
         "(V.O.)", "(O.S.)", "(O.C.)", "(CONT'D)",
@@ -152,19 +190,24 @@ class ScreenplayParser:
             if skip_until_content and not stripped:
                 continue
 
-            # Check if line matches any header pattern
+            # Check if line matches any header pattern (only while still looking for content)
             is_header = False
-            for pattern in header_patterns:
-                if re.match(pattern, stripped, re.IGNORECASE):
-                    is_header = True
-                    break
+            if skip_until_content:
+                for pattern in header_patterns:
+                    if re.match(pattern, stripped, re.IGNORECASE):
+                        is_header = True
+                        break
 
-            # Skip header lines
-            if is_header:
+            # Skip header lines only at the beginning
+            if is_header and skip_until_content:
                 continue
 
             # Check for screenplay content to start including lines
             screenplay_indicators = [
+                r'^TITLE:\s*',  # Title page title
+                r'^AUTHOR:\s*',  # Title page author
+                r'^CONTACT:\s*',  # Title page contact
+                r'^(by|written by|screenplay by)$',  # Title page credit
                 r'^(FADE IN|FADE OUT|CUT TO|DISSOLVE TO)',
                 r'^(INT\.|EXT\.)',
                 r'^\**(INT\.|EXT\.)',  # Scene headings with asterisks
@@ -173,14 +216,19 @@ class ScreenplayParser:
             ]
 
             is_screenplay_content = False
-            for pattern in screenplay_indicators:
-                if re.match(pattern, stripped, re.IGNORECASE):
-                    is_screenplay_content = True
-                    skip_until_content = False
-                    break
+            if skip_until_content and stripped:  # Only check if we're still looking for content
+                for pattern in screenplay_indicators:
+                    if re.match(pattern, stripped, re.IGNORECASE):
+                        is_screenplay_content = True
+                        skip_until_content = False
+                        break
 
-            # If we've found screenplay content, start including all lines
+            # If we've found screenplay content, or if we have any non-empty line after skipping headers
             if not skip_until_content or is_screenplay_content:
+                skip_until_content = False
+                cleaned_lines.append(line)
+            elif stripped and not is_header:
+                # Non-empty line that doesn't match header pattern - treat as screenplay start
                 skip_until_content = False
                 cleaned_lines.append(line)
 
@@ -218,6 +266,28 @@ class ScreenplayParser:
 
         # Clean up common formatting issues
         cleaned_content = self._clean_element_content(stripped)
+
+        # Check for title page elements ONLY if we're still in title page mode
+        if self.state.in_title_page:
+            title_match = self.TITLE_PAGE_TITLE_PATTERN.match(cleaned_content)
+            if title_match:
+                return ScreenplayElement(ElementType.TITLE_PAGE_TITLE, title_match.group(1), line_number, line)
+
+            author_match = self.TITLE_PAGE_AUTHOR_PATTERN.match(cleaned_content)
+            if author_match:
+                return ScreenplayElement(ElementType.TITLE_PAGE_AUTHOR, author_match.group(1), line_number, line)
+
+            contact_match = self.TITLE_PAGE_CONTACT_PATTERN.match(cleaned_content)
+            if contact_match:
+                return ScreenplayElement(ElementType.TITLE_PAGE_CONTACT, contact_match.group(1), line_number, line)
+
+            if self.TITLE_PAGE_CREDIT_PATTERN.match(cleaned_content):
+                return ScreenplayElement(ElementType.TITLE_PAGE_CREDIT, cleaned_content, line_number, line)
+
+        # Check for VFX/SFX bracketed text
+        vfx_match = self.VFX_SFX_PATTERN.match(cleaned_content)
+        if vfx_match:
+            return ScreenplayElement(ElementType.VFX_SFX, cleaned_content, line_number, line)
 
         # Check for page breaks
         if self.PAGE_BREAK_PATTERN.match(cleaned_content):
@@ -312,6 +382,12 @@ class ScreenplayParser:
 
     def _update_state(self, element: ScreenplayElement):
         """Update parser state based on parsed element."""
+        # Exit title page mode once we hit screenplay elements
+        if element.type in [ElementType.SCENE_HEADING, ElementType.TRANSITION, ElementType.ACTION]:
+            if element.type == ElementType.TRANSITION or element.type == ElementType.SCENE_HEADING:
+                self.state.in_title_page = False
+                self.state.screenplay_started = True
+
         if element.type == ElementType.CHARACTER:
             self.state.in_dialogue_block = True
             self.state.expecting_dialogue = True
@@ -342,6 +418,7 @@ class ScreenplayParser:
     def _post_process(self, elements: List[ScreenplayElement]) -> List[ScreenplayElement]:
         """Post-process elements to fix common parsing issues."""
         processed = []
+        scene_number = 0
 
         for i, element in enumerate(elements):
             # Fix misidentified dialogue that should be action
@@ -358,6 +435,16 @@ class ScreenplayParser:
                     if not any(ext in element.content.upper() for ext in self.CHARACTER_EXTENSIONS):
                         element.type = ElementType.ACTION
 
+            # Add scene numbers to scene headings
+            if element.type == ElementType.SCENE_HEADING:
+                scene_number += 1
+                element.scene_number = scene_number
+
             processed.append(element)
 
         return processed
+
+    def enable_scene_numbering(self) -> None:
+        """Enable scene numbering for parsed elements."""
+        # This is handled automatically in _post_process now
+        pass

@@ -20,6 +20,11 @@ class ErrorCode(Enum):
     E6_INVALID_BLOCK_SEQUENCE = "E6"
     E7_INCORRECT_INDENTATION = "E7"
     E8_MISSING_ELEMENT = "E8"
+    E9_META_COMMENTS = "E9"
+    E10_CASUAL_TEXT = "E10"
+    E11_CHARACTER_INCONSISTENCY = "E11"
+    E12_REDUNDANT_CONTENT = "E12"
+    E13_MISPLACED_ACTION_IN_PAREN = "E13"
 
 
 @dataclass
@@ -76,6 +81,13 @@ class ScreenplayValidator:
         self._validate_transitions(elements)
         self._validate_block_sequencing(elements)
         self._validate_indentation(elements)
+
+        # New validation checks for real-world screenplay issues
+        self._validate_meta_comments(elements)
+        self._validate_casual_text(elements)
+        self._validate_character_consistency(elements)
+        self._validate_redundant_content(elements)
+        self._validate_misplaced_action_in_parentheticals(elements)
 
         # Create report
         report = self._create_report(elements)
@@ -341,3 +353,196 @@ class ScreenplayValidator:
                 lines.append("")
 
         return "\n".join(lines)
+
+    def _validate_meta_comments(self, elements: List[ScreenplayElement]):
+        """Detect and flag meta-comments that should be removed from spec scripts."""
+        meta_comment_pattern = re.compile(
+            r'\[(?:NOTE|TODO|FIXME|DECIDE|MAYBE|REMINDER|TBD|SHOOT|CUT|EDIT).*?\]',
+            re.IGNORECASE
+        )
+
+        for element in elements:
+            if element.type in [ElementType.ACTION, ElementType.DIALOGUE, ElementType.SCENE_HEADING]:
+                matches = meta_comment_pattern.findall(element.content)
+                if matches:
+                    suggestion = meta_comment_pattern.sub('', element.content).strip()
+                    self.errors.append(ValidationError(
+                        line_number=element.line_number,
+                        error_code=ErrorCode.E9_META_COMMENTS,
+                        message=f"Meta-comment found: {', '.join(matches)}. Remove from spec script.",
+                        element_type=element.type,
+                        content=element.content,
+                        suggestion=suggestion if suggestion else None,
+                        confidence=0.95
+                    ))
+
+    def _validate_casual_text(self, elements: List[ScreenplayElement]):
+        """Detect casual/informal text that should be expanded or formalized."""
+        casual_patterns = {
+            r'\bidk\b': "I don't know",
+            r'\btbh\b': "to be honest",
+            r'\blol\b': "[remove or use (laughing)]",
+            r'\bomg\b': "oh my god",
+            r'\bwtf\b': "[profanity - spell out or remove]",
+            r'\bbrb\b': "be right back",
+            r'\bbtw\b': "by the way",
+            r'\bfyi\b': "for your information",
+            r'\bimo\b': "in my opinion",
+            r'\bimho\b': "in my humble opinion"
+        }
+
+        for element in elements:
+            if element.type == ElementType.DIALOGUE:
+                content_lower = element.content.lower()
+                found_casual = []
+
+                for pattern, replacement in casual_patterns.items():
+                    if re.search(pattern, content_lower, re.IGNORECASE):
+                        found_casual.append((pattern, replacement))
+
+                if found_casual:
+                    suggestion = element.content
+                    for pattern, replacement in found_casual:
+                        suggestion = re.sub(pattern, replacement, suggestion, flags=re.IGNORECASE)
+
+                    self.errors.append(ValidationError(
+                        line_number=element.line_number,
+                        error_code=ErrorCode.E10_CASUAL_TEXT,
+                        message=f"Casual/informal text detected. Consider expanding abbreviations.",
+                        element_type=element.type,
+                        content=element.content,
+                        suggestion=suggestion,
+                        confidence=0.85
+                    ))
+
+    def _validate_character_consistency(self, elements: List[ScreenplayElement]):
+        """Detect inconsistent character naming (e.g., JESS vs JESSICA vs Jess)."""
+        # Collect all character names
+        character_names = {}
+        for element in elements:
+            if element.type == ElementType.CHARACTER:
+                # Extract base name (without extensions like (O.S.), (V.O.), (CONT'D))
+                base_name = re.sub(r'\s*\([^)]+\)\s*$', '', element.content).strip()
+                base_name_upper = base_name.upper()
+
+                if base_name_upper not in character_names:
+                    character_names[base_name_upper] = []
+                character_names[base_name_upper].append((element.line_number, base_name))
+
+        # Check for variations in capitalization or similar names
+        for canonical_name, instances in character_names.items():
+            unique_forms = set(name for _, name in instances)
+            if len(unique_forms) > 1:
+                # Multiple forms of the same character name
+                for line_num, name_form in instances:
+                    if name_form != canonical_name:
+                        self.errors.append(ValidationError(
+                            line_number=line_num,
+                            error_code=ErrorCode.E11_CHARACTER_INCONSISTENCY,
+                            message=f"Inconsistent character naming. Found variations: {', '.join(sorted(unique_forms))}",
+                            element_type=ElementType.CHARACTER,
+                            content=name_form,
+                            suggestion=canonical_name,
+                            confidence=0.90
+                        ))
+
+        # Check for similar names that might be the same character
+        # (e.g., JESS and JESSICA, MIKE and MICHAEL)
+        name_list = list(character_names.keys())
+        for i, name1 in enumerate(name_list):
+            for name2 in name_list[i+1:]:
+                if name1 in name2 or name2 in name1:
+                    # Possible related names - flag for review
+                    self.errors.append(ValidationError(
+                        line_number=0,
+                        error_code=ErrorCode.E11_CHARACTER_INCONSISTENCY,
+                        message=f"Possible character name variants: '{name1}' and '{name2}'. Verify these are different characters.",
+                        element_type=ElementType.CHARACTER,
+                        content=f"{name1}, {name2}",
+                        suggestion=None,
+                        confidence=0.60
+                    ))
+
+    def _validate_redundant_content(self, elements: List[ScreenplayElement]):
+        """Detect repeated dialogue or action lines."""
+        # Track dialogue and action content
+        dialogue_history = {}
+        action_history = {}
+
+        for element in elements:
+            if element.type == ElementType.DIALOGUE:
+                content_normalized = element.content.lower().strip()
+                if len(content_normalized) > 20:  # Only check substantial lines
+                    if content_normalized in dialogue_history:
+                        prev_line = dialogue_history[content_normalized]
+                        self.errors.append(ValidationError(
+                            line_number=element.line_number,
+                            error_code=ErrorCode.E12_REDUNDANT_CONTENT,
+                            message=f"Repeated dialogue detected (previously on line {prev_line}). Review for intentional repetition.",
+                            element_type=element.type,
+                            content=element.content,
+                            suggestion=None,
+                            confidence=0.70
+                        ))
+                    else:
+                        dialogue_history[content_normalized] = element.line_number
+
+            elif element.type == ElementType.ACTION:
+                content_normalized = element.content.lower().strip()
+                if len(content_normalized) > 30:  # Only check substantial lines
+                    if content_normalized in action_history:
+                        prev_line = action_history[content_normalized]
+                        self.errors.append(ValidationError(
+                            line_number=element.line_number,
+                            error_code=ErrorCode.E12_REDUNDANT_CONTENT,
+                            message=f"Repeated action line detected (previously on line {prev_line}). Review for intentional repetition.",
+                            element_type=element.type,
+                            content=element.content,
+                            suggestion=None,
+                            confidence=0.70
+                        ))
+                    else:
+                        action_history[content_normalized] = element.line_number
+
+    def _validate_misplaced_action_in_parentheticals(self, elements: List[ScreenplayElement]):
+        """Detect action descriptions in parentheticals that should be action lines."""
+        # Patterns that indicate action rather than tone
+        action_indicators = [
+            r'\b(walks?|runs?|sits?|stands?|enters?|exits?|grabs?|picks?|throws?)\b',
+            r'\b(looking|staring|glancing|watching)\b',
+            r'\b(long|short|brief|quick)\s+(pause|beat|stare|look|glance)\b',
+            r'\.\s*\.\s*\.', # Ellipsis in description
+            r'\btoo\s+long\b',
+            r'\bfor\s+a\s+(moment|second|minute)\b'
+        ]
+
+        for element in elements:
+            if element.type == ElementType.PARENTHETICAL:
+                content_lower = element.content.lower()
+
+                # Check if parenthetical is too long (likely action)
+                if len(element.content) > 50:
+                    self.errors.append(ValidationError(
+                        line_number=element.line_number,
+                        error_code=ErrorCode.E13_MISPLACED_ACTION_IN_PAREN,
+                        message="Parenthetical is too long. Should be brief tone/delivery cue only.",
+                        element_type=element.type,
+                        content=element.content,
+                        suggestion="Move to action line",
+                        confidence=0.75
+                    ))
+                    continue
+
+                # Check for action indicators
+                for pattern in action_indicators:
+                    if re.search(pattern, content_lower):
+                        self.errors.append(ValidationError(
+                            line_number=element.line_number,
+                            error_code=ErrorCode.E13_MISPLACED_ACTION_IN_PAREN,
+                            message="Parenthetical contains physical action. Should be in action line, not parenthetical.",
+                            element_type=element.type,
+                            content=element.content,
+                            suggestion="Move to action line before dialogue",
+                            confidence=0.80
+                        ))
+                        break

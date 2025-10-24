@@ -94,15 +94,41 @@ screenplay-format fix screenplay.txt --output fixed.txt
 ## Screenplay Elements
 
 The formatter recognizes and properly formats:
+
+### Title Page Elements
+- **Title**: `TITLE: Your Screenplay Title` - Centered, uppercase on title page
+- **Author**: `AUTHOR: Your Name` - Centered on title page below credit line
+- **Credit Line**: `by` or `written by` - Centered between title and author
+- **Contact**: `CONTACT: Your contact info` - Bottom right of title page (multiple lines supported)
+
+### Core Elements
 - **Scene Headings**: INT./EXT. LOCATION - TIME
 - **Action Lines**: Description of what's happening
 - **Character Names**: Centered, ALL CAPS
 - **Dialogue**: Properly indented conversation
 - **Parentheticals**: Acting directions in parentheses
-- **Transitions**: CUT TO:, FADE OUT., etc.
+- **Transitions**: Extended support including:
+  - Standard: FADE IN:, FADE OUT., CUT TO:, DISSOLVE TO:
+  - Advanced: WIPE TO:, PUSH TO:, IRIS IN., IRIS OUT., WHIP PAN TO:
+  - Editorial: L-CUT, J-CUT, SPLIT SCREEN
+- **Shot Headers**: CLOSE ON:, ANGLE ON:, POV, WIDE SHOT, etc.
+- **Dual Dialogue**: Use `^` prefix for second character speaking simultaneously
+- **VFX/SFX**: Sound and visual effects in brackets `[EXPLOSION]`
+- **On-Screen Text**: SUPER:, CHYRON:, TITLE:, SUBTITLE:, CARD:
+- **Montages**: BEGIN MONTAGE / END MONTAGE
+- **Page Breaks**: `===`, `PAGE BREAK`, or `---PAGE---`
+- **Character Extensions**: (V.O.), (O.S.), (O.C.), (CONT'D)
+
+### Scene Numbering (Shooting Scripts)
+Add scene numbers to your formatted screenplay:
+```bash
+screenplay-format format input.txt output.pdf --scene-numbers
+```
+Scene numbers appear on both sides of scene headings (industry standard for production scripts).
 
 ## Example Input
 
+### Basic Screenplay
 ```
 INT. COFFEE SHOP - DAY
 
@@ -116,6 +142,55 @@ BARISTA
 Coming right up!
 
 CUT TO:
+```
+
+### With Title Page
+```
+TITLE: The Perfect Screenplay
+by
+AUTHOR: Your Name
+CONTACT: your.email@example.com
+CONTACT: 555-123-4567
+
+FADE IN:
+
+INT. COFFEE SHOP - DAY
+
+...
+```
+
+### Advanced Features
+```
+TITLE: Action Thriller
+by
+AUTHOR: John Smith
+CONTACT: john@example.com
+
+FADE IN:
+
+INT. WAREHOUSE - NIGHT
+
+[DISTANT SIREN]
+
+CLOSE ON: A shadowy figure moves through the darkness.
+
+PROTAGONIST
+(whispering)
+We need to move. Now.
+
+^SIDEKICK
+(simultaneously, on radio)
+Copy that. I'm in position.
+
+The figure ducks behind a crate.
+
+WIPE TO:
+
+EXT. ROOFTOP - CONTINUOUS
+
+SUPER: 3 HOURS EARLIER
+
+...
 ```
 
 ## Configuration

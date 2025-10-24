@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Screenplay Formatter - Professional Screenplay Formatting Tool</title>
-    <!-- Force refresh: v2.2 -->
+    <title>Valentine - Professional Screenplay Formatter</title>
     <style>
         * {
             margin: 0;
@@ -12,1767 +11,926 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --cream: #F5EFE6;
+            --royal-blue: #5B5FDB;
+            --violet: #7C6FDB;
+            --dark: #2A2A2A;
+            --accent: #4A4ECF;
+            --light-cream: #FFF9F0;
+            --text: #3D3D3D;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #f5f5f7;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            transition: background 0.3s ease;
-        }
-
-        body.dark-mode {
-            background: #0f0f0f;
-        }
-
-        body.dark-mode .app-container {
-            background: #1a1a1a;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
-        }
-
-        body.dark-mode .sidebar {
-            background: #141414;
-            border-right: 1px solid #2a2a2a;
-            color: #e5e5e5;
-        }
-
-        body.dark-mode .sidebar-header {
-            background: #1a1a1a;
-            border-bottom: 1px solid #2a2a2a;
-        }
-
-        body.dark-mode .sidebar-subtitle {
-            color: #999;
-        }
-
-        body.dark-mode .sidebar-section {
-            border-bottom: 1px solid #2a2a2a;
-        }
-
-        body.dark-mode .section-title {
-            color: #999;
-        }
-
-        body.dark-mode .api-key-input {
-            background: #1a1a1a;
-            border-color: #2a2a2a;
-            color: #e5e5e5;
-        }
-
-        body.dark-mode .api-key-input::placeholder {
-            color: #666;
-        }
-
-        body.dark-mode .format-option:hover {
-            background: #1f1f1f;
-        }
-
-        body.dark-mode .format-option.selected {
-            background: #1a2540;
-            border-color: #5b7fff;
-        }
-
-        body.dark-mode .format-option-desc {
-            color: #999;
-        }
-
-        body.dark-mode .option-item:hover {
-            background: #1f1f1f;
-        }
-
-        body.dark-mode .select-wrapper select {
-            background: #1a1a1a;
-            border-color: #2a2a2a;
-            color: #e5e5e5;
-        }
-
-        body.dark-mode .select-wrapper select option {
-            background: #1a1a1a;
-            color: #e5e5e5;
-        }
-
-        body.dark-mode .action-button.secondary {
-            background: #1a1a1a;
-            border-color: #2a2a2a;
-            color: #e5e5e5;
-        }
-
-        body.dark-mode .action-button.secondary:hover {
-            background: #1f1f1f;
-        }
-
-        body.dark-mode .main-content {
-            background: #1a1a1a;
-        }
-
-        body.dark-mode .upload-area {
-            background: #141414;
-            border-color: #2a2a2a;
-        }
-
-        body.dark-mode .upload-area:hover {
-            background: #1a1a1a;
-            border-color: #5b7fff;
-        }
-
-        body.dark-mode .upload-area.dragover {
-            background: #1a2540;
-        }
-
-        body.dark-mode .upload-title {
-            color: #e5e5e5;
-        }
-
-        body.dark-mode .upload-subtitle {
-            color: #999;
-        }
-
-        .app-container {
-            width: 100%;
-            max-width: 1600px;
-            height: 95vh;
-            display: flex;
-            gap: 0;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
-            position: relative;
-            background: white;
-        }
-
-        .sidebar {
-            width: 350px;
-            min-width: 300px;
-            background: #fafafa;
-            color: #1a1a1a;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: var(--cream);
+            color: var(--text);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            position: relative;
-            border-right: 1px solid #e5e5e5;
         }
 
-        .sidebar-header {
-            padding: 24px;
-            border-bottom: 1px solid #e5e5e5;
-            background: white;
-        }
 
-        .sidebar-title {
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-        }
-
-        .theme-toggle {
-            width: 48px;
-            height: 26px;
-            background: #e5e5e5;
-            border-radius: 13px;
-            position: relative;
-            cursor: pointer;
-            transition: background 0.3s ease;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 5px;
-        }
-
-        .theme-toggle:hover {
-            background: #d1d1d6;
-        }
-
-        .theme-toggle-icon {
-            font-size: 12px;
-            z-index: 1;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        .theme-toggle-icon.sun {
-            opacity: 1;
-        }
-
-        .theme-toggle-icon.moon {
-            opacity: 0.4;
-        }
-
-        .theme-toggle.active .theme-toggle-icon.sun {
-            opacity: 0.4;
-        }
-
-        .theme-toggle.active .theme-toggle-icon.moon {
-            opacity: 1;
-            color: white;
-        }
-
-        .theme-toggle-slider {
-            width: 22px;
-            height: 22px;
-            background: white;
-            border-radius: 50%;
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            transition: transform 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        .theme-toggle.active {
-            background: #5b7fff;
-        }
-
-        .theme-toggle.active:hover {
-            background: #4a6eef;
-        }
-
-        .theme-toggle.active .theme-toggle-slider {
-            transform: translateX(22px);
-        }
-
-        .sidebar-subtitle {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 20px;
-            font-weight: 500;
-        }
-
-        .api-key-section {
-            margin-top: 16px;
-        }
-
-        .api-key-label {
-            font-size: 13px;
-            margin-bottom: 8px;
-            opacity: 0.9;
-            font-weight: 500;
-        }
-
-        .api-key-input-container {
-            display: flex;
-            gap: 8px;
-        }
-
-        .api-key-input {
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 80px 40px 60px;
             flex: 1;
-            padding: 10px 12px;
-            border: 1px solid #e5e5e5;
-            border-radius: 8px;
-            background: white;
-            color: #1a1a1a;
-            font-size: 13px;
-            outline: none;
-            transition: all 0.2s;
         }
 
-        .api-key-input::placeholder {
-            color: #999;
+        .title {
+            font-size: 72px;
+            font-weight: 400;
+            font-style: italic;
+            line-height: 1.1;
+            margin-bottom: 60px;
+            color: var(--royal-blue);
+            letter-spacing: -1px;
         }
 
-        .api-key-input:focus {
-            border-color: #5b7fff;
-            box-shadow: 0 0 0 3px rgba(91, 127, 255, 0.1);
+        .title-bold {
+            font-weight: 700;
+            color: #4A4ECF;
         }
 
-        .api-key-save-btn {
-            padding: 10px 16px;
-            background: #5b7fff;
-            border: none;
-            border-radius: 8px;
-            color: white;
-            font-size: 13px;
+        .subtitle {
+            font-size: 18px;
+            color: var(--text);
+            margin-bottom: 50px;
+            line-height: 1.6;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .card {
+            background: var(--light-cream);
+            border-radius: 20px;
+            padding: 50px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 12px rgba(91, 95, 219, 0.08);
+        }
+
+        .drop-zone {
+            border: 3px dashed var(--royal-blue);
+            border-radius: 16px;
+            padding: 70px 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: var(--cream);
+        }
+
+        .drop-zone:hover {
+            background: rgba(91, 95, 219, 0.05);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .drop-zone.dragover {
+            background: rgba(91, 95, 219, 0.1);
+            border-color: var(--accent);
+            transform: scale(1.01);
+        }
+
+        .drop-zone-icon {
+            font-size: 64px;
+            margin-bottom: 24px;
+            opacity: 0.5;
+        }
+
+        .drop-zone-text {
+            font-size: 22px;
+            font-weight: 400;
+            font-style: italic;
+            color: var(--royal-blue);
+            margin-bottom: 12px;
+        }
+
+        .drop-zone-subtext {
+            font-size: 14px;
+            color: #888;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        #fileInput { display: none; }
+
+        .section-label {
+            font-size: 11px;
             font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            color: var(--royal-blue);
+            margin-bottom: 18px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .option-card {
+            background: var(--cream);
+            padding: 22px;
+            border-radius: 12px;
+            border: 2px solid transparent;
             cursor: pointer;
             transition: all 0.2s;
-        }
-
-        .api-key-save-btn:hover {
-            background: #4a6eef;
-            transform: translateY(-1px);
-        }
-
-        .api-key-status {
-            font-size: 12px;
-            margin-top: 8px;
-            color: #666;
-        }
-
-        .api-key-status.saved {
-            color: #10b981;
-        }
-
-        .sidebar-section {
-            padding: 32px 24px;
-            border-bottom: 1px solid #e5e5e5;
-        }
-
-        .section-title {
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #666;
-        }
-
-        .format-options {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .format-option {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 2px solid transparent;
         }
 
-        .format-option:hover {
-            background: #f5f5f7;
+        .option-card:hover {
+            border-color: var(--royal-blue);
         }
 
-        .format-option.selected {
-            background: #f0f3ff;
-            border-color: #5b7fff;
+        .option-card.selected {
+            border-color: var(--royal-blue);
+            background: rgba(91, 95, 219, 0.08);
         }
 
-        .format-option input[type="radio"] {
+        .option-checkbox {
             width: 20px;
             height: 20px;
-            cursor: pointer;
-            accent-color: #5b7fff;
-        }
-
-        .format-option-content {
-            flex: 1;
-        }
-
-        .format-option-title {
-            font-size: 15px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .format-option-desc {
-            font-size: 12px;
-            color: #666;
-        }
-
-        .option-group {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .option-item {
+            border: 2px solid var(--royal-blue);
+            border-radius: 50%;
             display: flex;
             align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .option-card.selected .option-checkbox {
+            background: var(--royal-blue);
+        }
+
+        .option-checkbox::after {
+            content: '✓';
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            opacity: 0;
+        }
+
+        .option-card.selected .option-checkbox::after {
+            opacity: 1;
+        }
+
+        .option-label {
+            font-size: 15px;
+            font-weight: 400;
+            color: var(--dark);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .format-modes {
+            display: flex;
+            flex-direction: column;
             gap: 12px;
-            padding: 10px 12px;
-            border-radius: 6px;
+            margin-bottom: 30px;
+        }
+
+        .format-mode {
+            background: var(--cream);
+            padding: 20px 24px;
+            border-radius: 12px;
+            border: 2px solid transparent;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .option-item:hover {
-            background: #f5f5f7;
-        }
-
-        .option-item input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            accent-color: #5b7fff;
-        }
-
-        .option-item label {
-            flex: 1;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .select-wrapper {
-            width: 100%;
-        }
-
-        .select-wrapper select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #e5e5e5;
-            border-radius: 8px;
-            background: white;
-            color: #1a1a1a;
-            font-size: 14px;
-            cursor: pointer;
-            outline: none;
             transition: all 0.2s;
         }
 
-        .select-wrapper select:focus {
-            border-color: #5b7fff;
-            box-shadow: 0 0 0 3px rgba(91, 127, 255, 0.1);
+        .format-mode:hover {
+            border-color: var(--royal-blue);
         }
 
-        .select-wrapper select option {
-            background: white;
-            color: #1a1a1a;
+        .format-mode.selected {
+            border-color: var(--royal-blue);
+            background: rgba(91, 95, 219, 0.08);
         }
 
-        .action-button {
-            width: 100%;
-            padding: 14px;
-            background: #5b7fff;
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            margin-top: 12px;
-            box-shadow: 0 2px 8px rgba(91, 127, 255, 0.25);
-        }
-
-        .action-button:hover {
-            transform: translateY(-2px);
-            background: #4a6eef;
-            box-shadow: 0 4px 12px rgba(91, 127, 255, 0.35);
-        }
-
-        .action-button:active {
-            transform: translateY(0);
-        }
-
-        .action-button.secondary {
-            background: white;
-            color: #1a1a1a;
-            border: 1px solid #e5e5e5;
-            box-shadow: none;
-        }
-
-        .action-button.secondary:hover {
-            background: #f5f5f7;
-            border-color: #d1d1d6;
-        }
-
-        .sidebar-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 0;
-        }
-
-        .sidebar-content::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .sidebar-content::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .sidebar-content::-webkit-scrollbar-thumb {
-            background: rgba(59, 130, 246, 0.5);
-            border-radius: 4px;
-        }
-
-        .main-content {
-            flex: 1;
-            background: white;
+        .format-mode-header {
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 6px;
         }
 
-        .main-header {
-            display: none;
-        }
-
-        .main-title {
-            font-size: 32px;
-            font-weight: 700;
-        }
-
-        .upload-area {
-            flex: 1;
+        .format-mode-radio {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--royal-blue);
+            border-radius: 50%;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 60px 40px;
-            background: #fafafa;
-            border: 3px dashed #d1d1d6;
-            margin: 20px;
-            border-radius: 16px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
+            flex-shrink: 0;
         }
 
-        .upload-area:hover {
-            border-color: #5b7fff;
-            background: #f5f5f7;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+        .format-mode.selected .format-mode-radio {
+            background: var(--royal-blue);
         }
 
-        .upload-area.dragover {
-            border-color: #5b7fff;
-            border-style: solid;
-            background: #f0f3ff;
-            transform: scale(1.01);
-            box-shadow: 0 12px 32px rgba(91, 127, 255, 0.15);
+        .format-mode-radio::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
         }
 
-        .upload-icon {
-            width: 120px;
-            height: 120px;
-            margin: 0 auto 24px;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        .format-mode.selected .format-mode-radio::after {
+            opacity: 1;
         }
 
-        .upload-icon img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        .upload-area:hover .upload-icon {
-            transform: scale(1.05);
-        }
-
-
-        .upload-title {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 12px;
-            color: #1e293b;
-        }
-
-        .upload-subtitle {
+        .format-mode-title {
             font-size: 16px;
-            color: #64748b;
-            margin-bottom: 24px;
-            text-align: center;
+            font-weight: 600;
+            color: var(--dark);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .format-mode-desc {
+            font-size: 13px;
+            color: #666;
+            margin-left: 32px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             line-height: 1.5;
         }
 
-        .upload-button {
-            padding: 14px 32px;
-            background: #5b7fff;
-            border: none;
-            border-radius: 10px;
+        .api-config-section {
+            background: rgba(91, 95, 219, 0.05);
+            border: 2px dashed var(--royal-blue);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 20px;
+        }
+
+        .api-config-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .api-config-icon {
+            font-size: 20px;
+        }
+
+        .api-config-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--royal-blue);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .api-config-desc {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .input-group {
+            margin-bottom: 12px;
+        }
+
+        .input-label {
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--dark);
+            margin-bottom: 6px;
+            display: block;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .api-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #DDD;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: 'Courier', monospace;
+            transition: all 0.2s;
+        }
+
+        .api-input:focus {
+            outline: none;
+            border-color: var(--royal-blue);
+            background: rgba(91, 95, 219, 0.02);
+        }
+
+        .api-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #DDD;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            transition: all 0.2s;
+            cursor: pointer;
+            background: white;
+        }
+
+        .api-select:focus {
+            outline: none;
+            border-color: var(--royal-blue);
+        }
+
+        .save-api-button {
+            width: 100%;
+            padding: 10px;
+            background: var(--royal-blue);
             color: white;
-            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 12px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 2px 8px rgba(91, 127, 255, 0.25);
+            transition: all 0.2s;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            margin-top: 8px;
         }
 
-        .upload-button:hover {
-            transform: translateY(-2px);
-            background: #4a6eef;
-            box-shadow: 0 4px 12px rgba(91, 127, 255, 0.35);
+        .save-api-button:hover {
+            background: var(--accent);
+            transform: translateY(-1px);
         }
 
-        .upload-button:active {
-            transform: translateY(0);
+        .api-status {
+            font-size: 11px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            margin-top: 8px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
 
-        .processing-area {
-            flex: 1;
-            padding: 40px;
-            display: none;
-            align-items: center;
-            justify-content: center;
+        .api-status.success {
+            background: #D4EDDA;
+            color: #155724;
+            border: 1px solid #C3E6CB;
         }
 
-        .processing-container {
-            max-width: 500px;
+        .api-status.error {
+            background: #F8D7DA;
+            color: #721C24;
+            border: 1px solid #F5C6CB;
+        }
+
+        .api-status.info {
+            background: #D1ECF1;
+            color: #0C5460;
+            border: 1px solid #BEE5EB;
+        }
+
+        .ai-notice {
+            font-size: 11px;
+            color: #888;
+            font-style: italic;
+            margin-top: 8px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .process-button {
             width: 100%;
-        }
-
-        .processing-header {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
-        .processing-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 8px;
-        }
-
-        body.dark-mode .processing-title {
-            color: #e5e5e5;
-        }
-
-        .processing-subtitle {
+            padding: 22px;
+            background: var(--royal-blue);
+            color: white;
+            border: none;
+            border-radius: 50px;
             font-size: 16px;
-            color: #64748b;
+            font-weight: 600;
+            font-style: italic;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Georgia', serif;
+            letter-spacing: 0.5px;
         }
 
-        body.dark-mode .processing-subtitle {
-            color: #999;
+        .process-button:hover:not(:disabled) {
+            background: var(--accent);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(91, 95, 219, 0.3);
         }
 
-        .progress-container {
-            background: #f1f5f9;
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
+        .process-button:active:not(:disabled) {
+            transform: translateY(-1px);
         }
 
-        body.dark-mode .progress-container {
-            background: #1f1f1f;
+        .process-button:disabled {
+            background: #CCC;
+            cursor: not-allowed;
+            opacity: 0.6;
         }
 
-        body.dark-mode .result-card {
-            background: #1a1a1a;
-            border-color: #2a2a2a;
+        .progress-section {
+            display: none;
         }
 
-        body.dark-mode .result-card h3 {
-            color: #e5e5e5;
-        }
-
-        body.dark-mode .result-card-description {
-            color: #999;
-        }
-
-        body.dark-mode .result-card-icon {
-            background: #1f1f1f;
-            color: #999;
-        }
-
-        body.dark-mode .result-card-icon.summary {
-            background: #1a2540;
-            color: #5b7fff;
-        }
-
-        body.dark-mode .results-title {
-            color: #e5e5e5;
-        }
-
-        body.dark-mode .processing-summary-card {
-            background: linear-gradient(135deg, #1a1a1a 0%, #1f1f1f 100%);
-            border-color: #2a2a2a;
-        }
-
-        body.dark-mode .summary-item {
-            background: #141414;
-            border-color: #2a2a2a;
-        }
-
-        body.dark-mode .summary-label {
-            color: #999;
-        }
-
-        body.dark-mode .summary-value {
-            color: #e5e5e5;
+        .progress-section.active {
+            display: block;
         }
 
         .progress-bar {
-            width: 100%;
             height: 8px;
-            background: #e2e8f0;
+            background: var(--cream);
             border-radius: 4px;
             overflow: hidden;
-            margin-bottom: 16px;
-        }
-
-        body.dark-mode .progress-bar {
-            background: #2a2a2a;
+            margin-bottom: 12px;
         }
 
         .progress-fill {
             height: 100%;
-            background: #5b7fff;
-            border-radius: 4px;
-            transition: width 0.3s ease;
-            width: 0%;
+            background: var(--royal-blue);
+            transition: width 0.3s;
         }
 
         .progress-text {
-            font-size: 14px;
-            color: #475569;
             text-align: center;
+            font-size: 14px;
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
 
-        body.dark-mode .progress-text {
-            color: #999;
-        }
-
-        .results-area {
-            flex: 1;
-            padding: 40px;
+        .results-section {
             display: none;
         }
 
-        .results-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 32px;
+        .results-section.active {
+            display: block;
         }
 
         .results-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: #1e293b;
+            font-size: 38px;
+            font-weight: 400;
+            font-style: italic;
+            color: var(--royal-blue);
+            margin-bottom: 35px;
+            text-align: center;
         }
 
-        .download-buttons {
-            display: flex;
-            gap: 12px;
-        }
-
-        .download-btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .download-btn.primary {
-            background: #5b7fff;
-            color: white;
-        }
-
-        .download-btn.secondary {
-            background: white;
-            color: #1a1a1a;
-            border: 1px solid #e5e5e5;
-        }
-
-        .download-btn.primary:hover {
-            background: #4a6eef;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(91, 127, 255, 0.3);
-        }
-
-        .download-btn.secondary:hover {
-            background: #f5f5f7;
-            transform: translateY(-2px);
-        }
-
-        .results-grid {
+        .download-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 18px;
         }
 
-        .result-card {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            transition: all 0.2s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .result-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: #5b7fff;
-        }
-
-        .result-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-        }
-
-        .result-card-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-
-        .result-card-icon {
-            width: 32px;
-            height: 32px;
-            background: #f3f4f6;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            font-weight: 600;
-            color: #6b7280;
-            flex-shrink: 0;
-        }
-
-        .result-card-icon.txt::before { content: 'TXT'; }
-        .result-card-icon.docx::before { content: 'DOC'; }
-        .result-card-icon.pdf::before { content: 'PDF'; }
-        .result-card-icon.json::before { content: 'LOG'; }
-        .result-card-icon.summary {
-            background: #f0f3ff;
-            color: #5b7fff;
-        }
-        .result-card-icon.summary::before { content: 'INFO'; }
-
-        .result-card h3 {
-            font-size: 16px;
-            font-weight: 600;
-            color: #1f2937;
-            margin: 0;
-        }
-
-        .result-card-description {
-            font-size: 14px;
-            color: #6b7280;
-            line-height: 1.5;
-            margin-bottom: 16px;
-        }
-
-        .processing-summary-card {
-            grid-column: 1 / -1;
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            border: 1px solid #e2e8f0;
-        }
-
-        .processing-summary-card::before {
-            background: #5b7fff;
-        }
-
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-top: 12px;
-        }
-
-        .summary-item {
-            background: white;
-            padding: 12px 16px;
-            border-radius: 8px;
-            border: 1px solid #e5e7eb;
-        }
-
-        .summary-label {
-            font-size: 12px;
-            font-weight: 500;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 4px;
-        }
-
-        .summary-value {
-            font-size: 16px;
-            font-weight: 600;
-            color: #1f2937;
-        }
-
-
-        .file-input {
-            display: none;
-        }
-
-        /* Filename Modal */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.6);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(4px);
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal {
-            background: white;
+        .download-card {
+            background: var(--cream);
+            padding: 35px 25px;
             border-radius: 16px;
-            padding: 32px;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        body.dark-mode .modal {
-            background: #1a1a1a;
-            border: 1px solid #2a2a2a;
-        }
-
-        .modal-header {
-            margin-bottom: 24px;
-        }
-
-        .modal-title {
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: #1e293b;
-        }
-
-        body.dark-mode .modal-title {
-            color: #e5e5e5;
-        }
-
-        .modal-subtitle {
-            font-size: 14px;
-            color: #64748b;
-        }
-
-        body.dark-mode .modal-subtitle {
-            color: #999;
-        }
-
-        .modal-body {
-            margin-bottom: 24px;
-        }
-
-        .modal-label {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            display: block;
-            color: #1e293b;
-        }
-
-        body.dark-mode .modal-label {
-            color: #e5e5e5;
-        }
-
-        .modal-input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid #e5e5e5;
-            border-radius: 8px;
-            background: white;
-            color: #1a1a1a;
-            font-size: 14px;
-            outline: none;
-            transition: all 0.2s;
-        }
-
-        body.dark-mode .modal-input {
-            background: #141414;
-            border-color: #2a2a2a;
-            color: #e5e5e5;
-        }
-
-        .modal-input:focus {
-            border-color: #5b7fff;
-            box-shadow: 0 0 0 3px rgba(91, 127, 255, 0.1);
-        }
-
-        .modal-footer {
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-        }
-
-        .modal-btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
+            text-align: center;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.25s ease;
+            border: 2px solid transparent;
         }
 
-        .modal-btn.primary {
-            background: #5b7fff;
+        .download-card:hover {
+            border-color: var(--royal-blue);
+            transform: translateY(-4px);
+            box-shadow: 0 6px 20px rgba(91, 95, 219, 0.18);
+        }
+
+        .download-card:active {
+            transform: translateY(-2px);
+        }
+
+        .download-icon {
+            font-size: 48px;
+            margin-bottom: 14px;
+        }
+
+        .download-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--dark);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .footer {
+            background: var(--royal-blue);
             color: white;
+            padding: 30px;
+            text-align: center;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            margin-top: auto;
+            font-family: 'Georgia', serif;
+            font-style: italic;
+            font-weight: 700;
         }
-
-        .modal-btn.primary:hover {
-            background: #4a6eef;
-            transform: translateY(-1px);
-        }
-
-        .modal-btn.secondary {
-            background: white;
-            color: #1a1a1a;
-            border: 1px solid #e5e5e5;
-        }
-
-        body.dark-mode .modal-btn.secondary {
-            background: #141414;
-            border-color: #2a2a2a;
-            color: #e5e5e5;
-        }
-
-        .modal-btn.secondary:hover {
-            background: #f5f5f7;
-        }
-
-        body.dark-mode .modal-btn.secondary:hover {
-            background: #1f1f1f;
-        }
-
 
         @media (max-width: 768px) {
-            .app-container {
-                height: 100vh;
-                border-radius: 0;
-                flex-direction: column;
-            }
-
-            .sidebar {
-                width: 100%;
-                height: auto;
-                max-height: 40vh;
-            }
-
-            .results-grid {
+            .container { padding: 40px 20px; }
+            .title { font-size: 48px; }
+            .card { padding: 30px 25px; }
+            .options-grid, .download-grid {
                 grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <div class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="sidebar-title">
-                    <span>Screenplay Formatter</span>
-                    <div class="theme-toggle" id="themeToggle">
-                        <span class="theme-toggle-icon sun">☀️</span>
-                        <span class="theme-toggle-icon moon">🌙</span>
-                        <div class="theme-toggle-slider"></div>
-                    </div>
-                </div>
-                <div class="sidebar-subtitle">Developed by YT Research LLC</div>
+    <div class="container">
+        <h1 class="title"><span class="title-bold">Meet Valentine:</span><br>a modern screenplay formatting tool</h1>
 
-                <div class="api-key-section">
-                    <div class="api-key-label">OpenAI API Key (for AI corrections)</div>
-                    <div class="api-key-input-container">
-                        <input
-                            type="password"
-                            class="api-key-input"
-                            id="apiKeyInput"
-                            placeholder="sk-proj-..."
-                        >
-                        <button class="api-key-save-btn" id="saveApiKeyBtn">Save</button>
+        <div class="card">
+            <div class="drop-zone" id="dropZone">
+                <div class="drop-zone-icon">📄</div>
+                <div class="drop-zone-text">Drop your screenplay here</div>
+                <div class="drop-zone-subtext">or click to browse • .txt files only</div>
+            </div>
+            <input type="file" id="fileInput" accept=".txt">
+        </div>
+
+        <div class="card">
+            <div class="section-label">AI Configuration</div>
+            <div class="api-config-section" id="apiConfigSection">
+                <div class="api-config-header">
+                    <div class="api-config-icon">🔑</div>
+                    <div class="api-config-title">OpenAI API Settings</div>
+                </div>
+                <div class="api-config-desc">
+                    Required for AI-Powered Fix and Smart Format modes. Your API key is stored locally and never sent to our servers.
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label" for="apiKeyInput">OpenAI API Key</label>
+                    <input type="password" id="apiKeyInput" class="api-input" placeholder="sk-..." autocomplete="off">
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label" for="modelSelect">Model</label>
+                    <select id="modelSelect" class="api-select">
+                        <option value="gpt-5">GPT-5 (Latest, if available)</option>
+                        <option value="gpt-4o" selected>GPT-4o (Recommended)</option>
+                        <option value="gpt-4o-mini">GPT-4o Mini (Faster, cheaper)</option>
+                        <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                        <option value="gpt-4">GPT-4</option>
+                        <option value="o1">o1 (Reasoning model)</option>
+                        <option value="o1-mini">o1-mini</option>
+                    </select>
+                </div>
+
+                <button class="save-api-button" id="saveApiBtn">Save API Configuration</button>
+
+                <div id="apiStatus" class="api-status" style="display: none;"></div>
+                <div class="ai-notice">Note: Standard Format mode works without an API key</div>
+            </div>
+
+            <div class="section-label">Formatting Mode</div>
+            <div class="format-modes">
+                <div class="format-mode selected" data-mode="format">
+                    <div class="format-mode-header">
+                        <div class="format-mode-radio"></div>
+                        <div class="format-mode-title">Standard Format</div>
                     </div>
-                    <div class="api-key-status" id="apiKeyStatus"></div>
+                    <div class="format-mode-desc">Professional formatting for well-structured scripts</div>
+                </div>
+                <div class="format-mode" data-mode="ai-fix">
+                    <div class="format-mode-header">
+                        <div class="format-mode-radio"></div>
+                        <div class="format-mode-title">AI-Powered Fix</div>
+                    </div>
+                    <div class="format-mode-desc">Automatic correction of formatting issues using GPT</div>
+                </div>
+                <div class="format-mode" data-mode="smart">
+                    <div class="format-mode-header">
+                        <div class="format-mode-radio"></div>
+                        <div class="format-mode-title">Smart Format</div>
+                    </div>
+                    <div class="format-mode-desc">Auto-detect and apply best formatting method</div>
                 </div>
             </div>
 
-            <div class="sidebar-content">
-                <div class="sidebar-section">
-                    <div class="section-title">Formatting Options</div>
-                    <div class="format-options">
-                        <div class="format-option selected" data-mode="format">
-                            <input type="radio" name="formatMode" id="formatMode" checked>
-                            <div class="format-option-content">
-                                <div class="format-option-title">Standard Format</div>
-                                <div class="format-option-desc">Professional formatting for well-structured scripts</div>
-                            </div>
-                        </div>
-                        <div class="format-option" data-mode="ai-fix">
-                            <input type="radio" name="formatMode" id="aiFixMode">
-                            <div class="format-option-content">
-                                <div class="format-option-title">AI-Powered Fix</div>
-                                <div class="format-option-desc">Automatic correction of formatting issues</div>
-                            </div>
-                        </div>
-                        <div class="format-option" data-mode="smart">
-                            <input type="radio" name="formatMode" id="smartMode">
-                            <div class="format-option-content">
-                                <div class="format-option-title">Smart Format</div>
-                                <div class="format-option-desc">Auto-detect and apply best formatting method</div>
-                            </div>
-                        </div>
-                    </div>
+            <div class="section-label">Output Formats</div>
+            <div class="options-grid">
+                <div class="option-card selected" data-format="txt">
+                    <div class="option-checkbox"></div>
+                    <div class="option-label">Plain Text (.txt)</div>
                 </div>
-
-                <div class="sidebar-section">
-                    <div class="section-title">Output Formats</div>
-                    <div class="option-group">
-                        <div class="option-item">
-                            <input type="checkbox" id="outputText" checked>
-                            <label for="outputText">Text (.txt)</label>
-                        </div>
-                        <div class="option-item">
-                            <input type="checkbox" id="outputDocx" checked>
-                            <label for="outputDocx">Word Document (.docx)</label>
-                        </div>
-                        <div class="option-item">
-                            <input type="checkbox" id="outputPdf" checked>
-                            <label for="outputPdf">PDF (.pdf)</label>
-                        </div>
-                    </div>
+                <div class="option-card" data-format="docx">
+                    <div class="option-checkbox"></div>
+                    <div class="option-label">Word (.docx)</div>
                 </div>
-
-                <div class="sidebar-section">
-                    <div class="section-title">AI Settings</div>
-                    <div class="option-group">
-                        <div class="option-item">
-                            <input type="checkbox" id="dryRun">
-                            <label for="dryRun">Dry Run (preview only)</label>
-                        </div>
-                        <div class="option-item">
-                            <input type="checkbox" id="generateAudit">
-                            <label for="generateAudit">Generate audit log</label>
-                        </div>
-                    </div>
-
-                    <div style="margin-top: 16px;">
-                        <label style="font-size: 13px; margin-bottom: 8px; display: block; opacity: 0.9;">Confidence Threshold</label>
-                        <div class="select-wrapper">
-                            <select id="confidenceLevel">
-                                <option value="0.6">Low (0.6) - More corrections</option>
-                                <option value="0.8" selected>Medium (0.8) - Balanced</option>
-                                <option value="0.9">High (0.9) - Conservative</option>
-                            </select>
-                        </div>
-                    </div>
+                <div class="option-card" data-format="pdf">
+                    <div class="option-checkbox"></div>
+                    <div class="option-label">PDF (.pdf)</div>
                 </div>
+            </div>
 
-                <div class="sidebar-section">
-                    <div class="section-title">Actions</div>
-                    <button class="action-button" id="processBtn" disabled>
-                        Process Screenplay
-                    </button>
-                    <button class="action-button secondary" id="resetBtn">
-                        Reset & Start Over
-                    </button>
+            <div class="section-label">Options</div>
+            <div class="options-grid">
+                <div class="option-card" data-option="scene-numbers">
+                    <div class="option-checkbox"></div>
+                    <div class="option-label">Scene Numbers</div>
                 </div>
             </div>
         </div>
 
-        <div class="main-content">
-            <div class="main-header">
-                <div class="main-title">Upload Your Screenplay</div>
+        <div class="card">
+            <button class="process-button" id="processBtn" disabled>Format Screenplay</button>
+        </div>
+
+        <div class="card progress-section" id="progressSection">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
             </div>
+            <div class="progress-text" id="progressText">Processing...</div>
+        </div>
 
-            <!-- Upload Area -->
-            <div class="upload-area" id="uploadArea">
-                <div class="upload-icon">
-                    <img src="logo.png" alt="Bastardizing Art">
-                </div>
-                <div class="upload-title">Drop your screenplay here</div>
-                <div class="upload-subtitle">
-                    Supports .txt files with screenplay content<br>
-                    Files are processed locally - your content stays private
-                </div>
-                <button class="upload-button" id="uploadBtn">Choose File</button>
-                <input type="file" class="file-input" id="fileInput" accept=".txt,.md">
-            </div>
-
-            <!-- Processing Area -->
-            <div class="processing-area" id="processingArea">
-                <div class="processing-container">
-                    <div class="processing-header">
-                        <div class="processing-title">Processing Your Screenplay</div>
-                        <div class="processing-subtitle">Applying professional formatting standards...</div>
-                    </div>
-
-                    <div class="progress-container">
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="progressFill"></div>
-                        </div>
-                        <div class="progress-text" id="progressText">Initializing...</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Results Area -->
-            <div class="results-area" id="resultsArea">
-                <div class="results-header">
-                    <div class="results-title">Formatting Complete!</div>
-                    <div class="download-buttons">
-                        <button class="download-btn primary" id="downloadAllBtn">Download All</button>
-                        <button class="download-btn secondary" id="startOverBtn">Start Over</button>
-                    </div>
-                </div>
-
-                <div class="results-grid" id="resultsGrid">
-                    <!-- Results will be populated here -->
-                </div>
-            </div>
+        <div class="card results-section" id="resultsSection">
+            <h2 class="results-title">Your Screenplay is Ready</h2>
+            <div class="download-grid" id="downloadGrid"></div>
         </div>
     </div>
 
-    <!-- Filename Modal -->
-    <div class="modal-overlay" id="filenameModal">
-        <div class="modal">
-            <div class="modal-header">
-                <div class="modal-title">Customize Filename</div>
-                <div class="modal-subtitle">Choose a name for your formatted screenplay</div>
-            </div>
-            <div class="modal-body">
-                <label class="modal-label" for="filenameInput">Filename (without extension)</label>
-                <input
-                    type="text"
-                    class="modal-input"
-                    id="filenameInput"
-                    placeholder="screenplay_formatted"
-                    value="screenplay_formatted"
-                >
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn secondary" id="cancelFilenameBtn">Cancel</button>
-                <button class="modal-btn primary" id="confirmFilenameBtn">Download</button>
-            </div>
-        </div>
-    </div>
+    <footer class="footer">
+        Developed by YT Research
+    </footer>
 
     <script>
-        // Application state
-        let selectedFile = null;
-        let apiKey = localStorage.getItem('apiKey') || '';
-        let processingResults = null;
-        let currentDownloadFormat = null;
+        let uploadedFile = null;
+        let selectedFormats = new Set(['txt']);
+        let selectedOptions = new Set();
+        let formatMode = 'format';
+        let apiKey = null;
+        let selectedModel = 'gpt-4o';
 
-        // DOM elements
-        const uploadArea = document.getElementById('uploadArea');
-        const processingArea = document.getElementById('processingArea');
-        const resultsArea = document.getElementById('resultsArea');
+        const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
-        const uploadBtn = document.getElementById('uploadBtn');
         const processBtn = document.getElementById('processBtn');
-        const resetBtn = document.getElementById('resetBtn');
-        const apiKeyInput = document.getElementById('apiKeyInput');
-        const saveApiKeyBtn = document.getElementById('saveApiKeyBtn');
-        const apiKeyStatus = document.getElementById('apiKeyStatus');
+        const progressSection = document.getElementById('progressSection');
         const progressFill = document.getElementById('progressFill');
         const progressText = document.getElementById('progressText');
-        const themeToggle = document.getElementById('themeToggle');
-        const filenameModal = document.getElementById('filenameModal');
-        const filenameInput = document.getElementById('filenameInput');
-        const confirmFilenameBtn = document.getElementById('confirmFilenameBtn');
-        const cancelFilenameBtn = document.getElementById('cancelFilenameBtn');
+        const resultsSection = document.getElementById('resultsSection');
+        const downloadGrid = document.getElementById('downloadGrid');
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const modelSelect = document.getElementById('modelSelect');
+        const saveApiBtn = document.getElementById('saveApiBtn');
+        const apiStatus = document.getElementById('apiStatus');
 
-        // Initialize
-        init();
+        // Load saved API configuration on page load
+        function loadApiConfig() {
+            const savedKey = localStorage.getItem('openai_api_key');
+            const savedModel = localStorage.getItem('openai_model');
 
-        function init() {
-            // Load saved API key
-            if (apiKey) {
-                apiKeyInput.value = apiKey;
-                updateApiKeyStatus(true);
+            if (savedKey) {
+                apiKey = savedKey;
+                apiKeyInput.value = savedKey;
+                showApiStatus('API key loaded', 'success');
             }
 
-            // Load saved theme preference
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark') {
-                document.body.classList.add('dark-mode');
-                themeToggle.classList.add('active');
+            if (savedModel) {
+                selectedModel = savedModel;
+                modelSelect.value = savedModel;
             }
-
-            // Set up event listeners
-            setupEventListeners();
         }
 
-        function setupEventListeners() {
-            // Theme toggle
-            themeToggle.addEventListener('click', toggleTheme);
+        // Save API configuration
+        saveApiBtn.addEventListener('click', async () => {
+            const key = apiKeyInput.value.trim();
+            const model = modelSelect.value;
 
-            // File upload
-            uploadArea.addEventListener('click', () => fileInput.click());
-            uploadBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                fileInput.click();
-            });
+            if (!key) {
+                showApiStatus('Please enter an API key', 'error');
+                return;
+            }
 
-            fileInput.addEventListener('change', handleFileSelect);
+            if (!key.startsWith('sk-')) {
+                showApiStatus('Invalid API key format (should start with sk-)', 'error');
+                return;
+            }
 
-            // Drag and drop
-            uploadArea.addEventListener('dragover', handleDragOver);
-            uploadArea.addEventListener('drop', handleDrop);
-            uploadArea.addEventListener('dragleave', handleDragLeave);
+            // Save to localStorage
+            localStorage.setItem('openai_api_key', key);
+            localStorage.setItem('openai_model', model);
+            apiKey = key;
+            selectedModel = model;
 
-            // API key
-            saveApiKeyBtn.addEventListener('click', saveApiKey);
-
-            // Format mode selection
-            document.querySelectorAll('.format-option').forEach(option => {
-                option.addEventListener('click', () => {
-                    document.querySelectorAll('.format-option').forEach(o => o.classList.remove('selected'));
-                    option.classList.add('selected');
-                    option.querySelector('input[type="radio"]').checked = true;
+            // Send to backend
+            try {
+                const response = await fetch('/api/config/api-key', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        api_key: key,
+                        model: model
+                    })
                 });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showApiStatus(`✓ Saved! Using ${model}`, 'success');
+                } else {
+                    showApiStatus(data.message || 'Failed to save', 'error');
+                }
+            } catch (error) {
+                showApiStatus('Error saving configuration', 'error');
+            }
+        });
+
+        function showApiStatus(message, type) {
+            apiStatus.textContent = message;
+            apiStatus.className = `api-status ${type}`;
+            apiStatus.style.display = 'block';
+
+            if (type === 'success') {
+                setTimeout(() => {
+                    apiStatus.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // Initialize on load
+        loadApiConfig();
+
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) handleFile(e.target.files[0]);
+        });
+
+        function handleFile(file) {
+            if (!file.name.endsWith('.txt')) {
+                alert('Please upload a .txt file');
+                return;
+            }
+            uploadedFile = file;
+            dropZone.querySelector('.drop-zone-text').textContent = file.name;
+            dropZone.querySelector('.drop-zone-subtext').textContent = `${(file.size / 1024).toFixed(1)} KB • Ready to format`;
+            dropZone.style.borderColor = 'var(--accent)';
+            processBtn.disabled = false;
+        }
+
+        document.querySelectorAll('.format-mode').forEach(mode => {
+            mode.addEventListener('click', () => {
+                document.querySelectorAll('.format-mode').forEach(m => m.classList.remove('selected'));
+                mode.classList.add('selected');
+                formatMode = mode.dataset.mode;
             });
+        });
 
-            // Action buttons
-            processBtn.addEventListener('click', processScreenplay);
-            resetBtn.addEventListener('click', resetApplication);
-
-            // Filename modal
-            confirmFilenameBtn.addEventListener('click', confirmDownload);
-            cancelFilenameBtn.addEventListener('click', closeFilenameModal);
-            filenameModal.addEventListener('click', (e) => {
-                if (e.target === filenameModal) closeFilenameModal();
-            });
-
-            // Download All button
-            document.addEventListener('click', (e) => {
-                if (e.target.id === 'downloadAllBtn') {
-                    openFilenameModal('all');
+        document.querySelectorAll('.option-card[data-format]').forEach(card => {
+            card.addEventListener('click', () => {
+                const format = card.dataset.format;
+                if (selectedFormats.has(format)) {
+                    selectedFormats.delete(format);
+                    card.classList.remove('selected');
+                } else {
+                    selectedFormats.add(format);
+                    card.classList.add('selected');
                 }
             });
-        }
+        });
 
-        function toggleTheme() {
-            document.body.classList.toggle('dark-mode');
-            themeToggle.classList.toggle('active');
+        document.querySelectorAll('.option-card[data-option]').forEach(card => {
+            card.addEventListener('click', () => {
+                const option = card.dataset.option;
+                if (selectedOptions.has(option)) {
+                    selectedOptions.delete(option);
+                    card.classList.remove('selected');
+                } else {
+                    selectedOptions.add(option);
+                    card.classList.add('selected');
+                }
+            });
+        });
 
-            // Save preference
-            if (document.body.classList.contains('dark-mode')) {
-                localStorage.setItem('theme', 'dark');
-            } else {
-                localStorage.setItem('theme', 'light');
-            }
-        }
-
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (file) {
-                selectedFile = file;
-                updateUploadArea(file);
-                processBtn.disabled = false;
-            }
-        }
-
-        function handleDragOver(event) {
-            event.preventDefault();
-            uploadArea.classList.add('dragover');
-        }
-
-        function handleDrop(event) {
-            event.preventDefault();
-            uploadArea.classList.remove('dragover');
-
-            const file = event.dataTransfer.files[0];
-            if (file && file.type === 'text/plain') {
-                selectedFile = file;
-                updateUploadArea(file);
-                processBtn.disabled = false;
-            }
-        }
-
-        function handleDragLeave(event) {
-            event.preventDefault();
-            uploadArea.classList.remove('dragover');
-        }
-
-        function updateUploadArea(file) {
-            uploadArea.innerHTML = `
-                <div class="upload-icon">
-                    <img src="logo.png" alt="Bastardizing Art">
-                </div>
-                <div class="upload-title">File Selected: ${file.name}</div>
-                <div class="upload-subtitle">
-                    Size: ${(file.size / 1024).toFixed(1)} KB<br>
-                    Ready to process with selected formatting options
-                </div>
-                <button class="upload-button">Choose Different File</button>
-            `;
-        }
-
-        function saveApiKey() {
-            const key = apiKeyInput.value.trim();
-            if (key) {
-                apiKey = key;
-                localStorage.setItem('apiKey', key);
-                updateApiKeyStatus(true);
-            } else {
-                updateApiKeyStatus(false, 'Please enter a valid API key');
-            }
-        }
-
-        function updateApiKeyStatus(success, message = null) {
-            if (success) {
-                apiKeyStatus.textContent = '✓ API key saved and ready';
-                apiKeyStatus.className = 'api-key-status saved';
-            } else {
-                apiKeyStatus.textContent = message || '✗ No API key configured';
-                apiKeyStatus.className = 'api-key-status';
-            }
-        }
-
-        async function processScreenplay() {
-            if (!selectedFile) return;
-
-            // Show processing area
-            uploadArea.style.display = 'none';
-            processingArea.style.display = 'flex';
+        processBtn.addEventListener('click', async () => {
+            if (!uploadedFile) return;
+            processBtn.disabled = true;
+            progressSection.classList.add('active');
+            resultsSection.classList.remove('active');
 
             try {
-                // Actually process the file
-                const result = await actuallyProcessFile();
+                // First upload the file
+                const uploadData = new FormData();
+                uploadData.append('file', uploadedFile);
 
-                // Show results
-                showResults(result);
-
-            } catch (error) {
-                // Show error and go back to upload
-                alert(`Processing failed: ${error.message}`);
-                resetApplication();
-            }
-        }
-
-        function getSelectedOutputFormats() {
-            const formats = [];
-            if (document.getElementById('outputText').checked) formats.push('txt');
-            if (document.getElementById('outputDocx').checked) formats.push('docx');
-            if (document.getElementById('outputPdf').checked) formats.push('pdf');
-            return formats;
-        }
-
-        function getAiSettings() {
-            return {
-                dryRun: document.getElementById('dryRun').checked,
-                generateAudit: document.getElementById('generateAudit').checked,
-                confidence: parseFloat(document.getElementById('confidenceLevel').value)
-            };
-        }
-
-        async function actuallyProcessFile() {
-            if (!selectedFile) return;
-
-            const formData = new FormData();
-            formData.append('file', selectedFile);
-
-            try {
-                // Step 1: Upload file
-                progressText.textContent = 'Uploading screenplay...';
-                progressFill.style.width = '20%';
+                let progress = 10;
+                progressFill.style.width = progress + '%';
+                progressText.textContent = `Uploading... ${progress}%`;
 
                 const uploadResponse = await fetch('/api/upload', {
                     method: 'POST',
-                    body: formData
+                    body: uploadData
                 });
 
-                if (!uploadResponse.ok) {
-                    const error = await uploadResponse.json();
-                    throw new Error(error.error || 'Upload failed');
-                }
-
+                if (!uploadResponse.ok) throw new Error('Upload failed');
                 const uploadResult = await uploadResponse.json();
-                sessionId = uploadResult.session_id;
 
-                // Step 2: Process with selected options
-                progressText.textContent = 'Processing screenplay...';
-                progressFill.style.width = '60%';
+                // Now process with selected options
+                progress = 30;
+                progressFill.style.width = progress + '%';
+                progressText.textContent = `Processing... ${progress}%`;
 
-                const formatMode = document.querySelector('input[name="formatMode"]:checked').id.replace('Mode', '').replace('format', 'format');
-                const processData = {
-                    session_id: sessionId,
-                    format_mode: formatMode === 'format' ? 'standard' : formatMode === 'aiFix' ? 'ai-fix' : 'smart',
-                    output_formats: getSelectedOutputFormats(),
-                    ai_settings: getAiSettings()
-                };
+                const interval = setInterval(() => {
+                    if (progress < 90) {
+                        progress += 8;
+                        progressFill.style.width = progress + '%';
+                        progressText.textContent = `Processing... ${progress}%`;
+                    }
+                }, 300);
 
                 const processResponse = await fetch('/api/process', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(processData)
+                    body: JSON.stringify({
+                        session_id: uploadResult.session_id,
+                        format_mode: formatMode,
+                        output_formats: Array.from(selectedFormats),
+                        include_scene_numbers: selectedOptions.has('scene-numbers'),
+                        ai_settings: {
+                            model: selectedModel || 'gpt-4o',
+                            confidence: 0.8,
+                            dry_run: false,
+                            generate_audit: false
+                        }
+                    })
                 });
 
-                if (!processResponse.ok) {
-                    const error = await processResponse.json();
-                    throw new Error(error.error || 'Processing failed');
-                }
+                clearInterval(interval);
 
-                const processResult = await processResponse.json();
-                processingResults = processResult;
+                if (!processResponse.ok) throw new Error('Processing failed');
 
-                // Step 3: Complete
-                progressText.textContent = 'Formatting complete!';
+                const data = await processResponse.json();
                 progressFill.style.width = '100%';
+                progressText.textContent = 'Complete!';
 
-                return processResult;
+                setTimeout(() => {
+                    progressSection.classList.remove('active');
+                    showResults(data);
+                }, 500);
 
             } catch (error) {
-                progressText.textContent = `Error: ${error.message}`;
-                progressFill.style.width = '0%';
-                throw error;
-            }
-        }
-
-        function showResults(result) {
-            processingArea.style.display = 'none';
-            resultsArea.style.display = 'flex';
-
-            // Update results title with summary
-            const resultsTitle = document.querySelector('.results-title');
-            if (result.summary) {
-                resultsTitle.textContent = `${result.summary.method} - Complete!`;
-            }
-
-            // Create result cards
-            const resultsGrid = document.getElementById('resultsGrid');
-
-            let cardsHTML = '';
-
-            // Add file download cards
-            result.files.forEach(file => {
-                const formatInfo = getFormatInfo(file.format);
-                cardsHTML += `
-                    <div class="result-card">
-                        <div class="result-card-header">
-                            <div class="result-card-icon ${file.format}"></div>
-                            <h3>${formatInfo.name} Output</h3>
-                        </div>
-                        <div class="result-card-description">
-                            ${formatInfo.description}
-                        </div>
-                        <button class="download-btn primary" onclick="openFilenameModal('${file.format}')">
-                            Download ${file.format.toUpperCase()}
-                        </button>
-                    </div>
-                `;
-            });
-
-            // Add audit log card if "Generate audit log" was enabled
-            if (document.getElementById('generateAudit').checked && result.audit_log) {
-                const formatInfo = getFormatInfo('json');
-                cardsHTML += `
-                    <div class="result-card">
-                        <div class="result-card-header">
-                            <div class="result-card-icon json"></div>
-                            <h3>${formatInfo.name}</h3>
-                        </div>
-                        <div class="result-card-description">
-                            ${formatInfo.description}
-                        </div>
-                        <button class="download-btn primary" onclick="openFilenameModal('json')">
-                            Download Audit Log
-                        </button>
-                    </div>
-                `;
-            }
-
-            // Add summary card if available
-            if (result.summary) {
-                let summaryItems = [];
-
-                summaryItems.push(`
-                    <div class="summary-item">
-                        <div class="summary-label">Method</div>
-                        <div class="summary-value">${result.summary.method}</div>
-                    </div>
-                `);
-
-                if (result.summary.elements_processed) {
-                    summaryItems.push(`
-                        <div class="summary-item">
-                            <div class="summary-label">Elements Processed</div>
-                            <div class="summary-value">${result.summary.elements_processed.toLocaleString()}</div>
-                        </div>
-                    `);
-                }
-
-                if (result.summary.original_errors !== undefined) {
-                    summaryItems.push(`
-                        <div class="summary-item">
-                            <div class="summary-label">Original Errors</div>
-                            <div class="summary-value">${result.summary.original_errors}</div>
-                        </div>
-                    `);
-                    summaryItems.push(`
-                        <div class="summary-item">
-                            <div class="summary-label">Applied Fixes</div>
-                            <div class="summary-value">${result.summary.applied_fixes}</div>
-                        </div>
-                    `);
-                }
-
-                let reasonText = '';
-                if (result.summary.reason) {
-                    reasonText = `
-                        <div style="margin-top: 16px; padding: 12px; background: #FAF4EB; border-left: 3px solid #6F8196; border-radius: 4px;">
-                            <div class="summary-label" style="margin-bottom: 4px;">Details</div>
-                            <div style="font-size: 14px; color: #40353E;">${result.summary.reason}</div>
-                        </div>
-                    `;
-                }
-
-                cardsHTML += `
-                    <div class="result-card processing-summary-card">
-                        <div class="result-card-header">
-                            <div class="result-card-icon summary"></div>
-                            <h3>Processing Summary</h3>
-                        </div>
-                        <div class="summary-grid">
-                            ${summaryItems.join('')}
-                        </div>
-                        ${reasonText}
-                    </div>
-                `;
-            }
-
-            resultsGrid.innerHTML = cardsHTML;
-        }
-
-        function getFormatInfo(format) {
-            const info = {
-                'txt': {
-                    name: 'Text Document',
-                    icon: '',
-                    description: 'Plain text format with proper screenplay structure and spacing. Perfect for editing and version control.'
-                },
-                'docx': {
-                    name: 'Word Document',
-                    icon: '',
-                    description: 'Microsoft Word format with industry-standard fonts and margins. Ready for professional submission.'
-                },
-                'pdf': {
-                    name: 'PDF Document',
-                    icon: '',
-                    description: 'Professional PDF format with Courier font and proper page layout. Industry-standard for final scripts.'
-                },
-                'json': {
-                    name: 'Audit Log',
-                    icon: '',
-                    description: 'Detailed correction log showing all AI-powered fixes applied to your screenplay.'
-                }
-            };
-            return info[format] || { name: format, icon: '', description: 'Formatted output file.' };
-        }
-
-        function openFilenameModal(format) {
-            currentDownloadFormat = format;
-            // Suggest filename based on original file
-            const baseName = selectedFile ? selectedFile.name.replace(/\.[^/.]+$/, '') : 'screenplay_formatted';
-            filenameInput.value = baseName;
-            filenameModal.classList.add('active');
-
-            // Wait a bit for the modal to render, then focus
-            setTimeout(() => {
-                filenameInput.focus();
-                filenameInput.select();
-            }, 50);
-
-            // Add keyboard listener for Enter key
-            const handleEnter = (e) => {
-                if (e.key === 'Enter') {
-                    confirmDownload();
-                    filenameInput.removeEventListener('keypress', handleEnter);
-                }
-            };
-            filenameInput.addEventListener('keypress', handleEnter);
-        }
-
-        function closeFilenameModal() {
-            filenameModal.classList.remove('active');
-            currentDownloadFormat = null;
-        }
-
-        function confirmDownload() {
-            if (!currentDownloadFormat || !sessionId) return;
-
-            const filename = filenameInput.value.trim() || 'screenplay_formatted';
-
-            if (currentDownloadFormat === 'all') {
-                downloadAllFormats(filename);
-            } else {
-                downloadFormat(currentDownloadFormat, filename);
-            }
-
-            closeFilenameModal();
-        }
-
-        function downloadFormat(format, customFilename = null) {
-            if (!sessionId) {
-                alert('No session found. Please process a file first.');
-                return;
-            }
-
-            const filename = customFilename || 'screenplay_formatted';
-
-            // Download specific format
-            const downloadUrl = `/api/download/${sessionId}/${format}`;
-            const link = document.createElement('a');
-            link.href = downloadUrl;
-            link.download = `${filename}.${format}`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        function downloadAllFormats(filename) {
-            if (!processingResults || !sessionId) return;
-
-            // Download all output files
-            processingResults.files.forEach(file => {
-                setTimeout(() => {
-                    downloadFormat(file.format, filename);
-                }, 100);
-            });
-
-            // Also download audit log if it exists
-            if (document.getElementById('generateAudit').checked && processingResults.audit_log) {
-                setTimeout(() => {
-                    downloadFormat('json', `${filename}_audit_log`);
-                }, 200);
-            }
-        }
-
-        function resetApplication() {
-            selectedFile = null;
-            processingResults = null;
-
-            // Reset UI
-            uploadArea.style.display = 'flex';
-            processingArea.style.display = 'none';
-            resultsArea.style.display = 'none';
-
-            // Reset upload area
-            uploadArea.innerHTML = `
-                <div class="upload-icon">
-                    <img src="logo.png" alt="Bastardizing Art">
-                </div>
-                <div class="upload-title">Drop your screenplay here</div>
-                <div class="upload-subtitle">
-                    Supports .txt files with screenplay content<br>
-                    Files are processed locally - your content stays private
-                </div>
-                <button class="upload-button" id="uploadBtn">Choose File</button>
-            `;
-
-            // Reset file input
-            fileInput.value = '';
-            processBtn.disabled = true;
-
-            // Re-setup upload button
-            document.getElementById('uploadBtn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                fileInput.click();
-            });
-        }
-
-        // Handle start over button in results
-        document.addEventListener('click', (e) => {
-            if (e.target.id === 'startOverBtn') {
-                resetApplication();
+                alert('Error: ' + error.message);
+                progressSection.classList.remove('active');
+                processBtn.disabled = false;
             }
         });
+
+        function showResults(data) {
+            resultsSection.classList.add('active');
+            downloadGrid.innerHTML = '';
+
+            const formatInfo = {
+                'txt': { icon: '📄', label: 'Plain Text' },
+                'docx': { icon: '📝', label: 'Word Document' },
+                'pdf': { icon: '📕', label: 'PDF' },
+                'json': { icon: '📊', label: 'Audit Log' }
+            };
+
+            if (data.files && data.files.length > 0) {
+                data.files.forEach(fileInfo => {
+                    const format = fileInfo.format || fileInfo.name.split('.').pop();
+                    const info = formatInfo[format] || { icon: '📄', label: format };
+
+                    const card = document.createElement('div');
+                    card.className = 'download-card';
+                    card.innerHTML = `
+                        <div class="download-icon">${info.icon}</div>
+                        <div class="download-label">${info.label}</div>
+                    `;
+                    card.onclick = () => {
+                        // Download the file
+                        window.location.href = `/api/download/${data.session_id}/${format}`;
+                    };
+                    downloadGrid.appendChild(card);
+                });
+            }
+
+            // Add summary info if available
+            if (data.summary) {
+                const summaryDiv = document.createElement('div');
+                summaryDiv.style.marginTop = '20px';
+                summaryDiv.style.padding = '15px';
+                summaryDiv.style.background = 'var(--cream)';
+                summaryDiv.style.borderRadius = '12px';
+                summaryDiv.style.fontSize = '13px';
+                summaryDiv.style.color = '#666';
+                summaryDiv.innerHTML = `<strong>Method:</strong> ${data.summary.method}`;
+                if (data.summary.original_errors !== undefined) {
+                    summaryDiv.innerHTML += `<br><strong>Errors Fixed:</strong> ${data.summary.original_errors - data.summary.remaining_errors}`;
+                }
+                resultsSection.appendChild(summaryDiv);
+            }
+        }
     </script>
 </body>
 </html>

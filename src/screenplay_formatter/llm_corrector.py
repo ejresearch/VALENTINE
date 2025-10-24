@@ -152,13 +152,50 @@ Output strictly as JSON matching the provided schema. No prose."""
 
         user_prompt = f"""STYLE_GUIDE (per industry standards):
 - Scene headings: ALL CAPS: INT./EXT. + SPECIFIC LOCATION + TIME (DAY/NIGHT/EVENING/CONTINUOUS/LATER).
-- Character names: ALL CAPS, centered (~3.7" from left margin).
-- Dialogue: Standard capitalization, indented ~2.5" left, ~1.5" right margin.
-- Parentheticals: Under character name, indented ~3.1", in parentheses (angrily), (O.S.), (V.O.).
-- Transitions: ALL CAPS, flush right (FADE IN:, FADE OUT., CUT TO:, DISSOLVE TO:, SMASH TO:).
-- Action lines: Present tense, first character mention in ALL CAPS, short paragraphs (3-4 lines max).
+- Character names: ALL CAPS, centered (~3.7" from left margin). Must be consistent throughout script.
+- Dialogue: Standard capitalization, indented ~2.5" left, ~1.5" right margin. No text-speak abbreviations (idk, lol, etc).
+- Parentheticals: Under character name, indented ~3.1", in parentheses (angrily), (O.S.), (V.O.). MUST be brief tone/delivery cues ONLY, not action.
+- Transitions: ALL CAPS, flush right (FADE IN:, FADE OUT., CUT TO:, DISSOLVE TO:, SMASH TO:). FADE IN: is left-aligned.
+- Action lines: Present tense, first character mention in ALL CAPS, short paragraphs (3-4 lines max). NO meta-comments.
 - Page timing: 1 page ≈ 1 minute screen time with Courier 12pt font.
 - Page breaks: Character dialogue blocks must NEVER break across pages. Keep character names with their dialogue.
+
+COMMON ISSUES TO FIX:
+
+1. Scene Headings:
+   BAD: int.  coffee shop  –DAY     #SCENE_1
+   GOOD: INT. COFFEE SHOP – DAY
+   (Capitalize, standardize spacing, remove scene tags)
+
+2. Meta-Comments:
+   BAD: A BARISTA PULLS A SHOT [NOTE TO SELF: shoot wide? or ultra-tight? decide later]
+   GOOD: A BARISTA pulls a shot for an empty chair.
+   (Remove all [NOTE TO SELF], [TODO], [FIXME], [DECIDE], etc.)
+
+3. Character Names:
+   BAD: Jess, JESSICA, jess (inconsistent variations)
+   GOOD: JESS (pick one canonical form, use consistently)
+   (Unify all variations to ONE canonical ALL CAPS name)
+
+4. Casual Text/Abbreviations:
+   BAD: idk, lol, btw, omg, shh sh shhhh
+   GOOD: I don't know, (laughing), by the way, oh my god, (shushing)
+   (Expand abbreviations, formalize casual text)
+
+5. Extensions:
+   BAD: (o.s.), (V.O), (CONT'D)
+   GOOD: (O.S.), (V.O.), (CONT'D)
+   (Standardize capitalization and punctuation)
+
+6. Parentheticals:
+   BAD: (long stare . . . . too long) — This is ACTION, not tone
+   GOOD: [Move to action line] She stares for a long moment.
+   (Parentheticals are for brief delivery cues ONLY, not physical actions)
+
+7. Redundancy:
+   BAD: Repeated identical dialogue or action across multiple scenes
+   GOOD: Flag for review - likely unintentional duplication
+   (Note but don't auto-remove - may be intentional)
 
 REMOVE THESE NON-SCREENPLAY ELEMENTS:
 - File headers (PROJECT NAMES, export timestamps, version info)
@@ -166,6 +203,7 @@ REMOVE THESE NON-SCREENPLAY ELEMENTS:
 - Separator lines (======, ------, ******, ####)
 - Scene/Act numbers that aren't part of screenplay format (ACT 1, SCENE 1)
 - Date stamps and technical information
+- Meta-comments: [NOTE TO SELF], [TODO], [FIXME], [DECIDE], [MAYBE]
 
 DETECTED_ISSUES: {', '.join(error_codes)}
 

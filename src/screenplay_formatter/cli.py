@@ -28,7 +28,8 @@ def cli():
               help='Output format (auto-detected from extension if not specified)')
 @click.option('--validate', '-v', is_flag=True, help='Validate output after formatting')
 @click.option('--strict', is_flag=True, help='Use strict validation mode')
-def format(input_file: str, output_file: str, format: Optional[str], validate: bool, strict: bool):
+@click.option('--scene-numbers', '-s', is_flag=True, help='Include scene numbers (for shooting scripts)')
+def format(input_file: str, output_file: str, format: Optional[str], validate: bool, strict: bool, scene_numbers: bool):
     """Format a screenplay from input file to output file."""
     try:
         # Read input file
@@ -52,17 +53,20 @@ def format(input_file: str, output_file: str, format: Optional[str], validate: b
 
         # Format based on type
         if format in ['text', 'txt']:
-            formatter = TextFormatter()
+            formatter = TextFormatter(include_scene_numbers=scene_numbers)
             click.echo("Formatting as plain text...")
         elif format == 'docx':
-            formatter = DocxFormatter()
+            formatter = DocxFormatter(include_scene_numbers=scene_numbers)
             click.echo("Formatting as DOCX...")
         elif format == 'pdf':
-            formatter = PdfFormatter()
+            formatter = PdfFormatter(include_scene_numbers=scene_numbers)
             click.echo("Formatting as PDF...")
         else:
             click.echo(f"Unknown format: {format}", err=True)
             sys.exit(1)
+
+        if scene_numbers:
+            click.echo("Scene numbering enabled")
 
         formatter.format(elements, output_file)
         click.echo(f"✓ Successfully formatted to {output_file}")

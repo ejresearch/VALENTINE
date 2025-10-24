@@ -49,7 +49,7 @@ class BaseFormatter(ABC):
 class TextFormatter(BaseFormatter):
     """Format screenplay as plain text with spacing."""
 
-    def __init__(self):
+    def __init__(self, include_scene_numbers: bool = False):
         # Calculate character positions for 80-character width
         self.page_width_chars = 80
         self.left_margin_chars = 15
@@ -58,23 +58,83 @@ class TextFormatter(BaseFormatter):
         self.dialogue_right_margin = 65
         self.parenthetical_indent = 31
         self.transition_position = 70
+        self.include_scene_numbers = include_scene_numbers
 
     def format(self, elements: List[ScreenplayElement], output_path: str):
         """Format screenplay elements as plain text."""
         lines = []
 
-        for i, element in enumerate(elements):
+        # Separate title page elements from screenplay body
+        title_page_elements = [e for e in elements if e.type in [
+            ElementType.TITLE_PAGE_TITLE, ElementType.TITLE_PAGE_AUTHOR,
+            ElementType.TITLE_PAGE_CONTACT, ElementType.TITLE_PAGE_CREDIT
+        ]]
+        screenplay_elements = [e for e in elements if e not in title_page_elements]
+
+        # Format title page if present
+        if title_page_elements:
+            lines.extend(self._format_title_page(title_page_elements))
+            lines.append("")  # Page break after title page
+
+        for i, element in enumerate(screenplay_elements):
             formatted = self._format_element(element)
             if formatted:
                 lines.extend(formatted)
 
             # Add spacing between elements
-            if self._needs_spacing_after(element, elements, i):
+            if self._needs_spacing_after(element, screenplay_elements, i):
                 lines.append("")
 
         # Write to file
         with open(output_path, 'w') as f:
             f.write('\n'.join(lines))
+
+    def _format_title_page(self, elements: List[ScreenplayElement]) -> List[str]:
+        """Format title page elements."""
+        lines = []
+
+        # Extract elements
+        title = None
+        author = None
+        contact = []
+        credit = None
+
+        for elem in elements:
+            if elem.type == ElementType.TITLE_PAGE_TITLE:
+                title = elem.content
+            elif elem.type == ElementType.TITLE_PAGE_AUTHOR:
+                author = elem.content
+            elif elem.type == ElementType.TITLE_PAGE_CONTACT:
+                contact.append(elem.content)
+            elif elem.type == ElementType.TITLE_PAGE_CREDIT:
+                credit = elem.content
+
+        # Format title page (industry standard layout)
+        # Proper order: Title, then credit, then author
+        lines.extend([""] * 10)  # Vertical spacing from top
+
+        if title:
+            lines.append(title.upper().center(self.page_width_chars).rstrip())
+            lines.append("")
+            lines.append("")
+            lines.append("")
+
+        if credit:
+            lines.append(credit.center(self.page_width_chars).rstrip())
+            lines.append("")
+
+        if author:
+            lines.append(author.center(self.page_width_chars).rstrip())
+
+        # Add more spacing to push contact info to bottom
+        lines.extend([""] * 15)
+
+        # Contact info (bottom right)
+        if contact:
+            for contact_line in contact:
+                lines.append(contact_line.rjust(self.page_width_chars - 5))
+
+        return lines
 
     def _format_element(self, element: ScreenplayElement) -> List[str]:
         """Format a single screenplay element."""
@@ -82,7 +142,11 @@ class TextFormatter(BaseFormatter):
             return []
 
         if element.type == ElementType.SCENE_HEADING:
-            return [element.content.upper()]
+            scene_heading = element.content.upper()
+            if self.include_scene_numbers and element.scene_number:
+                # Add scene number on both sides (industry standard)
+                scene_heading = f"{element.scene_number}   {scene_heading}   {element.scene_number}"
+            return [scene_heading]
 
         if element.type == ElementType.ACTION:
             return self._wrap_text(element.content, 0, self.page_width_chars)
@@ -106,8 +170,12 @@ class TextFormatter(BaseFormatter):
             )
 
         if element.type == ElementType.TRANSITION:
-            # Right-align transitions
-            return [element.content.upper().rjust(self.transition_position)]
+            # FADE IN: is left-aligned, all other transitions are right-aligned
+            if element.content.upper().strip() == "FADE IN:":
+                return [element.content.upper()]
+            else:
+                # Right-align other transitions
+                return [element.content.upper().rjust(self.transition_position)]
 
         if element.type in [ElementType.MONTAGE_BEGIN, ElementType.MONTAGE_END]:
             return [element.content.upper()]
@@ -124,6 +192,14 @@ class TextFormatter(BaseFormatter):
         if element.type in [ElementType.DUAL_DIALOGUE_LEFT, ElementType.DUAL_DIALOGUE_RIGHT]:
             # Dual dialogue - these will be handled specially in post-processing
             return [element.content.upper().center(self.page_width_chars // 2).rstrip()]
+
+        if element.type == ElementType.VFX_SFX:
+            # Format VFX/SFX as action but keep brackets
+            return [element.content.upper()]
+
+        if element.type == ElementType.MORE:
+            # Format (MORE) centered
+            return [element.content.center(self.page_width_chars).rstrip()]
 
         return [element.content]
 
@@ -203,17 +279,33 @@ class TextFormatter(BaseFormatter):
 class DocxFormatter(BaseFormatter):
     """Format screenplay as DOCX with proper styles."""
 
+    def __init__(self, include_scene_numbers: bool = False):
+        super().__init__()
+        self.include_scene_numbers = include_scene_numbers
+
     def format(self, elements: List[ScreenplayElement], output_path: str):
         """Format screenplay elements as DOCX."""
         doc = Document()
         self._setup_page(doc)
         self._create_styles(doc)
 
-        for i, element in enumerate(elements):
+        # Separate title page elements from screenplay body
+        title_page_elements = [e for e in elements if e.type in [
+            ElementType.TITLE_PAGE_TITLE, ElementType.TITLE_PAGE_AUTHOR,
+            ElementType.TITLE_PAGE_CONTACT, ElementType.TITLE_PAGE_CREDIT
+        ]]
+        screenplay_elements = [e for e in elements if e not in title_page_elements]
+
+        # Add title page if present
+        if title_page_elements:
+            self._add_title_page(doc, title_page_elements)
+            doc.add_page_break()
+
+        for i, element in enumerate(screenplay_elements):
             self._add_element(doc, element)
 
             # Add spacing between elements
-            if self._needs_spacing_after(element, elements, i):
+            if self._needs_spacing_after(element, screenplay_elements, i):
                 doc.add_paragraph()
 
         doc.save(output_path)
@@ -255,6 +347,64 @@ class DocxFormatter(BaseFormatter):
             header_run.font.name = self.FONT_NAME
             header_run.font.size = Pt(self.FONT_SIZE)
             header_para.add_run('.')  # Add period after page number
+
+    def _add_title_page(self, doc: Document, elements: List[ScreenplayElement]):
+        """Add title page to document."""
+        # Extract elements
+        title = None
+        author = None
+        contact = []
+        credit = None
+
+        for elem in elements:
+            if elem.type == ElementType.TITLE_PAGE_TITLE:
+                title = elem.content
+            elif elem.type == ElementType.TITLE_PAGE_AUTHOR:
+                author = elem.content
+            elif elem.type == ElementType.TITLE_PAGE_CONTACT:
+                contact.append(elem.content)
+            elif elem.type == ElementType.TITLE_PAGE_CREDIT:
+                credit = elem.content
+
+        # Add vertical spacing
+        for _ in range(10):
+            doc.add_paragraph()
+
+        # Title (centered, uppercase)
+        if title:
+            title_para = doc.add_paragraph(title.upper())
+            title_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            title_para.runs[0].font.name = self.FONT_NAME
+            title_para.runs[0].font.size = Pt(self.FONT_SIZE)
+            title_para.runs[0].font.bold = False
+            doc.add_paragraph()
+
+        # Credit line (centered)
+        if credit:
+            credit_para = doc.add_paragraph(credit)
+            credit_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            credit_para.runs[0].font.name = self.FONT_NAME
+            credit_para.runs[0].font.size = Pt(self.FONT_SIZE)
+            doc.add_paragraph()
+
+        # Author (centered)
+        if author:
+            author_para = doc.add_paragraph(author)
+            author_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            author_para.runs[0].font.name = self.FONT_NAME
+            author_para.runs[0].font.size = Pt(self.FONT_SIZE)
+
+        # Add more spacing to push contact info down
+        for _ in range(15):
+            doc.add_paragraph()
+
+        # Contact info (bottom right)
+        if contact:
+            for contact_line in contact:
+                contact_para = doc.add_paragraph(contact_line)
+                contact_para.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+                contact_para.runs[0].font.name = self.FONT_NAME
+                contact_para.runs[0].font.size = Pt(self.FONT_SIZE)
 
     def _create_styles(self, doc: Document):
         """Create custom styles for screenplay elements."""
@@ -332,13 +482,15 @@ class DocxFormatter(BaseFormatter):
             ElementType.DIALOGUE: 'Dialogue',
             ElementType.PARENTHETICAL: 'Parenthetical',
             ElementType.TRANSITION: 'Transition',
-            ElementType.SHOT: 'Shot',  # New
-            ElementType.DUAL_DIALOGUE_LEFT: 'Character',  # New
-            ElementType.DUAL_DIALOGUE_RIGHT: 'Character',  # New
+            ElementType.SHOT: 'Shot',
+            ElementType.DUAL_DIALOGUE_LEFT: 'Character',
+            ElementType.DUAL_DIALOGUE_RIGHT: 'Character',
             ElementType.MONTAGE_BEGIN: 'SceneHeading',
             ElementType.MONTAGE_END: 'SceneHeading',
             ElementType.TITLE: 'Action',
             ElementType.CHYRON: 'Action',
+            ElementType.VFX_SFX: 'Action',
+            ElementType.MORE: 'Character',
         }
 
         style = style_map.get(element.type, 'Normal')
@@ -347,8 +499,12 @@ class DocxFormatter(BaseFormatter):
         content = element.content
         if element.type in [ElementType.SCENE_HEADING, ElementType.CHARACTER,
                            ElementType.TRANSITION, ElementType.MONTAGE_BEGIN,
-                           ElementType.MONTAGE_END]:
+                           ElementType.MONTAGE_END, ElementType.VFX_SFX]:
             content = content.upper()
+
+        # Add scene numbers if enabled
+        if element.type == ElementType.SCENE_HEADING and self.include_scene_numbers and element.scene_number:
+            content = f"{element.scene_number}   {content}   {element.scene_number}"
 
         paragraph = doc.add_paragraph(content, style=style)
 
@@ -377,12 +533,13 @@ class DocxFormatter(BaseFormatter):
 class PdfFormatter(BaseFormatter):
     """Format screenplay as PDF with pagination."""
 
-    def __init__(self):
+    def __init__(self, include_scene_numbers: bool = False):
         super().__init__()
         self.lines_per_page = 55
         self.line_height = 12  # points
         self.current_page = 1
         self.current_y = 0
+        self.include_scene_numbers = include_scene_numbers
 
     def format(self, elements: List[ScreenplayElement], output_path: str):
         """Format screenplay elements as PDF."""
@@ -441,7 +598,10 @@ class PdfFormatter(BaseFormatter):
 
         # Format based on element type
         if element.type == ElementType.SCENE_HEADING:
-            self._add_text(c, element.content.upper(), self.LEFT_MARGIN * inch)
+            scene_heading = element.content.upper()
+            if self.include_scene_numbers and element.scene_number:
+                scene_heading = f"{element.scene_number}   {scene_heading}   {element.scene_number}"
+            self._add_text(c, scene_heading, self.LEFT_MARGIN * inch)
             self._move_down(c, 2)
 
         elif element.type == ElementType.ACTION:
@@ -471,10 +631,14 @@ class PdfFormatter(BaseFormatter):
                 self._move_down(c, 1)
 
         elif element.type == ElementType.TRANSITION:
-            # Right align
-            text_width = c.stringWidth(element.content.upper(), "Courier", self.FONT_SIZE)
-            x_pos = self.PAGE_WIDTH * inch - self.RIGHT_MARGIN * inch - text_width
-            self._add_text(c, element.content.upper(), x_pos)
+            # FADE IN: is left-aligned, all others are right-aligned
+            if element.content.upper().strip() == "FADE IN:":
+                self._add_text(c, element.content.upper(), self.LEFT_MARGIN * inch)
+            else:
+                # Right align other transitions
+                text_width = c.stringWidth(element.content.upper(), "Courier", self.FONT_SIZE)
+                x_pos = self.PAGE_WIDTH * inch - self.RIGHT_MARGIN * inch - text_width
+                self._add_text(c, element.content.upper(), x_pos)
             self._move_down(c, 2)
 
     def _add_text(self, c: canvas.Canvas, text: str, x_pos: float):

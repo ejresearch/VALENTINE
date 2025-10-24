@@ -111,8 +111,9 @@ END MONTAGE"""
 
     def test_parse_title(self):
         """Test parsing of titles and chyrons."""
+        # Note: TITLE: at start can be ambiguous (title page vs on-screen title)
+        # Use other patterns or provide context (e.g., after a scene heading)
         titles = [
-            "TITLE: Chapter One",
             "CHYRON: Three Years Later",
             "SUPER: London, 1942"
         ]
@@ -120,6 +121,14 @@ END MONTAGE"""
         for title in titles:
             elements = self.parser.parse(title)
             assert elements[0].type == ElementType.TITLE
+
+        # Test TITLE: with screenplay context (after scene heading)
+        text = """INT. OFFICE - DAY
+
+TITLE: Chapter One"""
+        elements = self.parser.parse(text)
+        title_elem = [e for e in elements if e.type == ElementType.TITLE]
+        assert len(title_elem) == 1
 
     def test_parse_complete_scene(self):
         """Test parsing a complete scene."""

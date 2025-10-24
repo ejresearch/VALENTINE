@@ -61,13 +61,19 @@ def get_config():
 
 @app.route('/api/config/api-key', methods=['POST'])
 def save_api_key():
-    """Save API key configuration."""
+    """Save API key and model configuration."""
     data = request.get_json()
     api_key = data.get('api_key', '').strip()
+    model = data.get('model', 'gpt-4o')
 
     if api_key:
         config_manager.set_openai_api_key(api_key)
-        return jsonify({'success': True, 'message': 'API key saved successfully'})
+        # Store the model preference
+        config_manager.set_default_model(model)
+        return jsonify({
+            'success': True,
+            'message': f'API key and model ({model}) saved successfully'
+        })
     else:
         return jsonify({'success': False, 'message': 'Invalid API key'}), 400
 
@@ -118,6 +124,55 @@ def upload_file():
 
     return jsonify({'error': 'Invalid file type. Please upload a .txt or .md file.'}), 400
 
+@app.route('/api/format', methods=['POST'])
+def format_screenplay():
+    """Format the uploaded screenplay."""
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file provided'}), 400
+
+    file = request.files['file']
+    formats = json.loads(request.form.get('formats', '["txt"]'))
+    include_scene_numbers = request.form.get('include_scene_numbers', 'false').lower() == 'true'
+
+    if not file or file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+
+    try:
+        # Read file content
+        content = file.read().decode('utf-8')
+
+        # Parse
+        parser = ScreenplayParser()
+        elements = parser.parse(content)
+
+        # Generate session ID
+        import uuid
+        session_id = str(uuid.uuid4())
+
+        # Format in requested formats
+        output_files = []
+        for fmt in formats:
+            if fmt == 'txt':
+                formatter = TextFormatter(include_scene_numbers=include_scene_numbers)
+                output_file = os.path.join(app.config['UPLOAD_FOLDER'], f'{session_id}.txt')
+                formatter.format(elements, output_file)
+                output_files.append(f'{session_id}.txt')
+            elif fmt == 'docx':
+                formatter = DocxFormatter(include_scene_numbers=include_scene_numbers)
+                output_file = os.path.join(app.config['UPLOAD_FOLDER'], f'{session_id}.docx')
+                formatter.format(elements, output_file)
+                output_files.append(f'{session_id}.docx')
+            elif fmt == 'pdf':
+                formatter = PdfFormatter(include_scene_numbers=include_scene_numbers)
+                output_file = os.path.join(app.config['UPLOAD_FOLDER'], f'{session_id}.pdf')
+                formatter.format(elements, output_file)
+                output_files.append(f'{session_id}.pdf')
+
+        return jsonify({'files': output_files})
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/process', methods=['POST'])
 def process_screenplay():
     """Process the uploaded screenplay."""
@@ -126,6 +181,7 @@ def process_screenplay():
     format_mode = data.get('format_mode', 'format')
     output_formats = data.get('output_formats', ['txt'])
     ai_settings = data.get('ai_settings', {})
+    include_scene_numbers = data.get('include_scene_numbers', False)
 
     if not session_id:
         return jsonify({'error': 'No session ID provided'}), 400
@@ -194,9 +250,13 @@ def process_with_ai(content, elements, session_id, output_formats, ai_settings):
         raise Exception("AI processing not available. Please install OpenAI library.")
 
     try:
+        # Get model from config or ai_settings
+        model = ai_settings.get('model', config_manager.get_default_model())
+
         # Initialize AI corrector
         corrector = LLMCorrector(
             api_key=config_manager.get_openai_api_key(),
+            model=model,
             min_confidence=ai_settings.get('confidence', 0.8)
         )
 
@@ -269,6 +329,17 @@ def process_smart_format(content, elements, session_id, output_formats, ai_setti
             results['summary']['reason'] = 'Errors found but AI not available - used standard formatting'
 
     return results
+
+@app.route('/download/<filename>')
+def download_file(filename):
+    """Download a single formatted file."""
+    try:
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(filename))
+        if os.path.exists(file_path):
+            return send_file(file_path, as_attachment=True, download_name=filename)
+        return jsonify({'error': 'File not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/download/<session_id>')
 def download_all(session_id):
