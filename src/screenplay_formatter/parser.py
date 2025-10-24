@@ -14,10 +14,14 @@ class ElementType(Enum):
     DIALOGUE = auto()
     PARENTHETICAL = auto()
     TRANSITION = auto()
+    SHOT = auto()  # New: CLOSE ON, ANGLE ON, etc.
+    DUAL_DIALOGUE_LEFT = auto()  # New: Left side of dual dialogue
+    DUAL_DIALOGUE_RIGHT = auto()  # New: Right side of dual dialogue
     MONTAGE_BEGIN = auto()
     MONTAGE_END = auto()
     TITLE = auto()
     CHYRON = auto()
+    PAGE_BREAK = auto()  # New: Forced page break
     BLANK = auto()
     UNKNOWN = auto()
 
@@ -71,6 +75,23 @@ class ScreenplayParser:
     PARENTHETICAL_PATTERN = re.compile(
         r"^\(.+\)$"
     )
+
+    # New: Shot headers pattern
+    SHOT_PATTERN = re.compile(
+        r"^(CLOSE ON|CLOSEUP ON|CLOSE UP ON|ANGLE ON|WIDE SHOT|WIDER SHOT|WIDEST SHOT|"
+        r"NEW ANGLE|ANOTHER ANGLE|REVERSE ANGLE|POV|P\.O\.V\.|INSERT|AERIAL SHOT|"
+        r"ESTABLISHING SHOT|MOVING SHOT|TRACKING SHOT|CRANE SHOT|HANDHELD SHOT)[\s:]",
+        re.IGNORECASE
+    )
+
+    # New: Page break marker
+    PAGE_BREAK_PATTERN = re.compile(
+        r"^(===|PAGE BREAK|---PAGE---|NEW PAGE)$",
+        re.IGNORECASE
+    )
+
+    # New: Dual dialogue marker (use ^ for second character in dual dialogue)
+    DUAL_DIALOGUE_MARKER = "^"
 
     CHARACTER_EXTENSIONS = [
         "(V.O.)", "(O.S.)", "(O.C.)", "(CONT'D)",
@@ -198,9 +219,17 @@ class ScreenplayParser:
         # Clean up common formatting issues
         cleaned_content = self._clean_element_content(stripped)
 
+        # Check for page breaks
+        if self.PAGE_BREAK_PATTERN.match(cleaned_content):
+            return ScreenplayElement(ElementType.PAGE_BREAK, cleaned_content, line_number, line)
+
         # Check for scene heading
         if self.SCENE_HEADING_PATTERN.match(cleaned_content):
             return ScreenplayElement(ElementType.SCENE_HEADING, cleaned_content, line_number, line)
+
+        # Check for shot headers
+        if self.SHOT_PATTERN.match(cleaned_content):
+            return ScreenplayElement(ElementType.SHOT, cleaned_content, line_number, line)
 
         # Check for transitions
         if self.TRANSITION_PATTERN.match(cleaned_content):
@@ -220,6 +249,12 @@ class ScreenplayParser:
         # Check for parentheticals
         if self.PARENTHETICAL_PATTERN.match(cleaned_content) and self.state.in_dialogue_block:
             return ScreenplayElement(ElementType.PARENTHETICAL, cleaned_content, line_number, line)
+
+        # Check for dual dialogue character (marked with ^ at start)
+        if cleaned_content.startswith(self.DUAL_DIALOGUE_MARKER):
+            clean_name = cleaned_content[1:].strip()
+            if self._is_character_name(clean_name):
+                return ScreenplayElement(ElementType.DUAL_DIALOGUE_RIGHT, clean_name, line_number, line)
 
         # Check for character names
         if self._is_character_name(cleaned_content):

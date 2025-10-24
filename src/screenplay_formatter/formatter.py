@@ -115,6 +115,16 @@ class TextFormatter(BaseFormatter):
         if element.type in [ElementType.TITLE, ElementType.CHYRON]:
             return [element.content.upper()]
 
+        if element.type == ElementType.SHOT:
+            return [element.content.upper()]
+
+        if element.type == ElementType.PAGE_BREAK:
+            return ["\n" * 3]  # Force page break with extra spacing
+
+        if element.type in [ElementType.DUAL_DIALOGUE_LEFT, ElementType.DUAL_DIALOGUE_RIGHT]:
+            # Dual dialogue - these will be handled specially in post-processing
+            return [element.content.upper().center(self.page_width_chars // 2).rstrip()]
+
         return [element.content]
 
     def _wrap_text(self, text: str, left_indent: int, right_margin: int) -> List[str]:
@@ -161,6 +171,10 @@ class TextFormatter(BaseFormatter):
         if element.type == ElementType.SCENE_HEADING:
             return True
 
+        # Add spacing after shot headers
+        if element.type == ElementType.SHOT:
+            return True
+
         # Add spacing after action blocks
         if element.type == ElementType.ACTION and next_element.type != ElementType.ACTION:
             return True
@@ -173,6 +187,15 @@ class TextFormatter(BaseFormatter):
         # Add spacing after transitions
         if element.type == ElementType.TRANSITION:
             return True
+
+        # Add spacing before CHARACTER names (professional standard)
+        if next_element.type in [ElementType.CHARACTER, ElementType.DUAL_DIALOGUE_LEFT, ElementType.DUAL_DIALOGUE_RIGHT]:
+            if element.type not in [ElementType.PARENTHETICAL, ElementType.DIALOGUE]:
+                return True
+
+        # No spacing after page breaks (they create their own)
+        if element.type == ElementType.PAGE_BREAK:
+            return False
 
         return False
 
@@ -196,7 +219,7 @@ class DocxFormatter(BaseFormatter):
         doc.save(output_path)
 
     def _setup_page(self, doc: Document):
-        """Set up page layout."""
+        """Set up page layout with page numbering."""
         sections = doc.sections
         for section in sections:
             section.page_height = Inches(self.PAGE_HEIGHT)
@@ -205,6 +228,33 @@ class DocxFormatter(BaseFormatter):
             section.right_margin = Inches(self.RIGHT_MARGIN)
             section.top_margin = Inches(self.TOP_MARGIN)
             section.bottom_margin = Inches(self.BOTTOM_MARGIN)
+
+            # Add page numbering in header (top right, industry standard)
+            header = section.header
+            header_para = header.paragraphs[0] if header.paragraphs else header.add_paragraph()
+            header_para.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+            header_run = header_para.add_run()
+
+            # Add page number field (shows current page number)
+            from docx.oxml import OxmlElement
+            from docx.oxml.ns import qn
+
+            fldChar1 = OxmlElement('w:fldChar')
+            fldChar1.set(qn('w:fldCharType'), 'begin')
+
+            instrText = OxmlElement('w:instrText')
+            instrText.set(qn('xml:space'), 'preserve')
+            instrText.text = "PAGE"
+
+            fldChar2 = OxmlElement('w:fldChar')
+            fldChar2.set(qn('w:fldCharType'), 'end')
+
+            header_run._r.append(fldChar1)
+            header_run._r.append(instrText)
+            header_run._r.append(fldChar2)
+            header_run.font.name = self.FONT_NAME
+            header_run.font.size = Pt(self.FONT_SIZE)
+            header_para.add_run('.')  # Add period after page number
 
     def _create_styles(self, doc: Document):
         """Create custom styles for screenplay elements."""
@@ -257,9 +307,22 @@ class DocxFormatter(BaseFormatter):
         trans_style.paragraph_format.space_before = Pt(12)
         trans_style.paragraph_format.space_after = Pt(12)
 
+        # Shot style (new)
+        shot_style = styles.add_style('Shot', WD_STYLE_TYPE.PARAGRAPH)
+        shot_style.font.name = self.FONT_NAME
+        shot_style.font.size = Pt(self.FONT_SIZE)
+        shot_style.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.LEFT
+        shot_style.paragraph_format.space_before = Pt(12)
+        shot_style.paragraph_format.space_after = Pt(12)
+
     def _add_element(self, doc: Document, element: ScreenplayElement):
         """Add a screenplay element to the document."""
         if element.type == ElementType.BLANK:
+            return
+
+        # Handle page breaks
+        if element.type == ElementType.PAGE_BREAK:
+            doc.add_page_break()
             return
 
         style_map = {
@@ -269,6 +332,9 @@ class DocxFormatter(BaseFormatter):
             ElementType.DIALOGUE: 'Dialogue',
             ElementType.PARENTHETICAL: 'Parenthetical',
             ElementType.TRANSITION: 'Transition',
+            ElementType.SHOT: 'Shot',  # New
+            ElementType.DUAL_DIALOGUE_LEFT: 'Character',  # New
+            ElementType.DUAL_DIALOGUE_RIGHT: 'Character',  # New
             ElementType.MONTAGE_BEGIN: 'SceneHeading',
             ElementType.MONTAGE_END: 'SceneHeading',
             ElementType.TITLE: 'Action',
